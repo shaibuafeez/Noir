@@ -1,0 +1,50 @@
+{
+  "name": "noir",
+  "version": "0.1.0",
+  "description": "Noir — Private trading agent on Aleo via Telegram",
+  "type": "module",
+  "bin": {
+    "ghost": "./src/chat/cli.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "cli": "tsx src/chat/cli.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "leo:build": "cd programs/ghost_trade && leo build"
+  },
+  "keywords": [
+    "aleo",
+    "privacy",
+    "trading",
+    "telegram"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@provablehq/sdk": "^0.10.1",
+    "better-sqlite3": "^12.8.0",
+    "commander": "^14.0.3",
+    "discord.js": "^14.26.2",
+    "dotenv": "^17.4.1",
+    "grammy": "^1.42.0",
+    "ws": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "core-js",
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.5.2",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}

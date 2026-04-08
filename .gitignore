@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.db
+*.db-wal
+*.db-shm
+programs/ghost_trade/build/
+programs/ghost_trade/outputs/
+.aleo-keys/

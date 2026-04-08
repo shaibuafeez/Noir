@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#0a0a0f"/>
+  <g transform="translate(256,230)">
+    <!-- Ghost body -->
+    <ellipse cx="0" cy="-28" rx="100" ry="112" fill="#7c7cff" opacity="0.9"/>
+    <rect x="-100" y="-28" width="200" height="128" fill="#7c7cff" opacity="0.9"/>
+    <!-- Ghost tail waves -->
+    <path d="M-100,100 Q-75,138 -50,100 Q-25,62 0,100 Q25,138 50,100 Q75,62 100,100 L100,100 L-100,100 Z" fill="#7c7cff" opacity="0.9"/>
+    <!-- Eyes -->
+    <circle cx="-35" cy="-22" r="18" fill="#0a0a0f"/>
+    <circle cx="35" cy="-22" r="18" fill="#0a0a0f"/>
+    <circle cx="-30" cy="-27" r="7" fill="#fff"/>
+    <circle cx="40" cy="-27" r="7" fill="#fff"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "program": "ghost_trade.aleo",
+  "version": "0.1.0",
+  "description": "Private trading records for Ghost agent",
+  "license": "MIT",
+  "leo": "4.0.0"
+}
