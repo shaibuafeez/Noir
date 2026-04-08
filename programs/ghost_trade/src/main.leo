@@ -1,4 +1,4 @@
-program ghost_trade.aleo {
+program ghost_trade_v2.aleo {
 
     @noupgrade
     constructor() {}

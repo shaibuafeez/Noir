@@ -4,7 +4,7 @@ import { getNetworkConfig, getNetworkLabel } from "./network.js";
 import { tokenToField } from "../market/tokens.js";
 import { recordTrade } from "../storage/db.js";
 
-const PROGRAM_ID = "ghost_trade.aleo";
+const PROGRAM_ID = "ghost_trade_v2.aleo";
 const CREDITS_PROGRAM = "credits.aleo";
 
 // Re-export tokenToField for backwards compatibility
