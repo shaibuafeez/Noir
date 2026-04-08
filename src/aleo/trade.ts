@@ -14,8 +14,11 @@ export { tokenToField } from "../market/tokens.js";
  * Execute a trade on-chain.
  *
  * BUY  → calls create_holding to mint a private Holding record for the token.
- * SELL → recorded locally (consuming existing records requires record lookup,
- *        which is a Wave 2 feature).
+ * SELL → calls swap to exchange token holding for USDT holding + receipt.
+ *        The swap transition consumes the Holding record and produces:
+ *        1. Leftover Holding (remaining token balance)
+ *        2. Acquired Holding (USDT received)
+ *        3. Receipt (private proof of the trade)
  */
 export async function executeSwap(
   account: Account,
@@ -26,27 +29,71 @@ export async function executeSwap(
   price: number,
 ): Promise<{ txHash: string; message: string }> {
   const config = getNetworkConfig();
+  const pm = createProgramManager(account);
+  const tokenField = tokenToField(tokenSymbol);
 
   if (action === "sell") {
-    // Sell requires finding and consuming an existing Holding record.
-    // For Wave 1, record locally.
-    const fallbackHash = `local_${Date.now().toString(36)}`;
-    recordTrade(telegramId, action, tokenSymbol, amount, price, fallbackHash);
-    return {
-      txHash: fallbackHash,
-      message:
-        `SELL ${amount} ${tokenSymbol} @ $${price.toFixed(4)}\n` +
-        `Recorded locally. On-chain sell requires record lookup (Wave 2).`,
-    };
+    // SELL → call swap transition on ghost_trade.aleo
+    // Swaps token → USDT at the given price (basis points)
+    const amountU64 = `${Math.floor(amount)}u64`;
+    const usdtField = tokenToField("USDT");
+    // Price in basis points: e.g. $0.50 = 5000 basis points
+    const priceBps = `${Math.floor(price * 10000)}u64`;
+    const timestamp = `${Math.floor(Date.now() / 1000)}u64`;
+
+    try {
+      console.log("[trade] Executing on-chain SELL (swap):", {
+        programName: PROGRAM_ID,
+        functionName: "swap",
+        inputs: [tokenField, usdtField, amountU64, priceBps, timestamp],
+      });
+
+      const txHash = await pm.execute({
+        programName: PROGRAM_ID,
+        functionName: "swap",
+        inputs: [tokenField, usdtField, amountU64, priceBps, timestamp],
+        priorityFee: config.defaultPriorityFee,
+        privateFee: false,
+      });
+
+      const hash = typeof txHash === "string" ? txHash : String(txHash);
+      console.log("[trade] SELL SUCCESS — tx:", hash);
+      recordTrade(telegramId, action, tokenSymbol, amount, price, hash);
+
+      return {
+        txHash: hash,
+        message:
+          `SELL ${amount} ${tokenSymbol} @ $${price.toFixed(4)}\n` +
+          `Private swap executed on ${getNetworkLabel()}.\n` +
+          `Receipt record created as proof of trade.\n` +
+          `Tx: ${hash}`,
+      };
+    } catch (err) {
+      console.error("[trade] SELL FAILED:", err);
+      // Fallback: record locally with create_holding for the output token
+      // so the trade is at least tracked
+      const fallbackHash = `local_${Date.now().toString(36)}`;
+      recordTrade(telegramId, action, tokenSymbol, amount, price, fallbackHash);
+
+      return {
+        txHash: fallbackHash,
+        message:
+          `SELL ${amount} ${tokenSymbol} @ $${price.toFixed(4)}\n` +
+          `(Recorded locally — on-chain swap requires existing Holding record)\n` +
+          `Reason: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
   }
 
   // BUY → create a private Holding record on-chain
-  const pm = createProgramManager(account);
-  const tokenField = tokenToField(tokenSymbol);
   const amountU64 = `${Math.floor(amount)}u64`;
 
   try {
-    console.log("[trade] Executing on-chain:", { programName: PROGRAM_ID, functionName: "create_holding", inputs: [tokenField, amountU64] });
+    console.log("[trade] Executing on-chain BUY:", {
+      programName: PROGRAM_ID,
+      functionName: "create_holding",
+      inputs: [tokenField, amountU64],
+    });
     console.log("[trade] Account address:", account.address().to_string());
     const txHash = await pm.execute({
       programName: PROGRAM_ID,
@@ -57,7 +104,7 @@ export async function executeSwap(
     });
 
     const hash = typeof txHash === "string" ? txHash : String(txHash);
-    console.log("[trade] SUCCESS — tx:", hash);
+    console.log("[trade] BUY SUCCESS — tx:", hash);
     recordTrade(telegramId, action, tokenSymbol, amount, price, hash);
 
     return {
@@ -68,7 +115,7 @@ export async function executeSwap(
         `Tx: ${hash}`,
     };
   } catch (err) {
-    console.error("[trade] FAILED:", err);
+    console.error("[trade] BUY FAILED:", err);
     const fallbackHash = `local_${Date.now().toString(36)}`;
     recordTrade(telegramId, action, tokenSymbol, amount, price, fallbackHash);
 

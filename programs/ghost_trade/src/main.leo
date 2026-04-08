@@ -3,6 +3,8 @@ program ghost_trade.aleo {
     @noupgrade
     constructor() {}
 
+    // ── Records ──
+
     // A private holding of a token.
     record Holding {
         owner: address,
@@ -19,6 +21,17 @@ program ghost_trade.aleo {
         amount_out: u64,
         timestamp: u64,
     }
+
+    // A ZK proof that the holder has at least `threshold` of a token
+    // without revealing the actual amount.
+    record BalanceProof {
+        owner: address,
+        token: field,
+        threshold: u64,
+        is_sufficient: bool,
+    }
+
+    // ── Transitions ──
 
     // Seed an initial balance for a token.
     fn create_holding(token: field, amount: u64) -> Holding {
@@ -93,5 +106,53 @@ program ghost_trade.aleo {
         };
 
         return (sender_holding, recipient_holding);
+    }
+
+    // Merge two holdings of the same token into one.
+    // Useful for consolidating fragmented records after multiple trades.
+    fn merge_holdings(
+        a: Holding,
+        b: Holding,
+    ) -> Holding {
+        // Both must be the same token
+        assert_eq(a.token, b.token);
+
+        return Holding {
+            owner: self.caller,
+            token: a.token,
+            amount: a.amount + b.amount,
+        };
+    }
+
+    // Prove you hold at least `threshold` of a token without revealing your balance.
+    // Produces a BalanceProof record that anyone can verify.
+    fn prove_minimum_balance(
+        holding: Holding,
+        threshold: u64,
+    ) -> (Holding, BalanceProof) {
+        let is_sufficient: bool = holding.amount >= threshold;
+
+        // Return the original holding unchanged + the proof
+        let unchanged: Holding = Holding {
+            owner: self.caller,
+            token: holding.token,
+            amount: holding.amount,
+        };
+
+        let proof: BalanceProof = BalanceProof {
+            owner: self.caller,
+            token: holding.token,
+            threshold,
+            is_sufficient,
+        };
+
+        return (unchanged, proof);
+    }
+
+    // Burn a holding — consume a record and destroy the tokens.
+    // Useful for dust cleanup or intentional burns.
+    fn burn_holding(holding: Holding) -> () {
+        assert(holding.amount > 0u64);
+        // Record is consumed, nothing is returned — tokens are destroyed.
     }
 }
