@@ -410,7 +410,7 @@ export function mapToolToIntent(
   }
 }
 
-// ── Main entry point ──
+// ── Main entry point (Claude) ──
 
 export async function callClaude(
   text: string,
@@ -448,6 +448,81 @@ export async function callClaude(
     return null;
   } catch (err) {
     console.error("[ai] Claude API error:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+// ── Gemini text chat (function calling via REST API) ──
+
+function buildGeminiTools(): object[] {
+  return TOOLS.map((t) => ({
+    name: t.name,
+    description: t.description,
+    parameters: t.input_schema,
+  }));
+}
+
+export async function callGemini(
+  text: string,
+  context: AgentContext,
+): Promise<AiResult | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const body = {
+      system_instruction: {
+        parts: [{ text: buildSystemPrompt(context) }],
+      },
+      contents: [{ role: "user", parts: [{ text }] }],
+      tools: [{ function_declarations: buildGeminiTools() }],
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      console.error("[ai] Gemini API error:", res.status, await res.text());
+      return null;
+    }
+
+    const data = (await res.json()) as {
+      candidates?: Array<{
+        content?: {
+          parts?: Array<{
+            text?: string;
+            functionCall?: { name: string; args: Record<string, unknown> };
+          }>;
+        };
+      }>;
+    };
+
+    const parts = data.candidates?.[0]?.content?.parts;
+    if (!parts) return null;
+
+    // Check for function call first
+    for (const part of parts) {
+      if (part.functionCall) {
+        const intent = mapToolToIntent(part.functionCall.name, part.functionCall.args);
+        if (intent) return { type: "tool", intent };
+      }
+    }
+
+    // Otherwise, extract text response
+    for (const part of parts) {
+      if (part.text?.trim()) {
+        return { type: "conversation", message: part.text.trim() };
+      }
+    }
+
+    return null;
+  } catch (err) {
+    console.error("[ai] Gemini API error:", err instanceof Error ? err.message : err);
     return null;
   }
 }

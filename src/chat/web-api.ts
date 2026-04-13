@@ -393,7 +393,7 @@ export async function handleApiRequest(
         if (!apiKey) return err(res, 503, "Gemini API key not configured"), true;
         return ok(res, {
           apiKey,
-          voiceModel: "gemini-2.0-flash-live-001",
+          voiceModel: "gemini-2.5-flash-native-audio-preview-12-2025",
           textModel: "gemini-2.0-flash",
         }), true;
       }

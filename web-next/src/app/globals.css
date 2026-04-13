@@ -4,37 +4,37 @@
 
 @layer base {
   :root {
-    /* Noir — obsidian dark + spectral indigo */
-    --background: 240 15% 3%;
-    --foreground: 0 0% 95%;
+    /* Noir — light burgundy plum theme */
+    --background: 180 5% 95%; /* #F3F4F4 */
+    --foreground: 0 0% 17%; /* #2C2C2C */
 
-    --card: 240 12% 6%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 100%; /* Pure white */
+    --card-foreground: 0 0% 17%;
 
-    --popover: 240 12% 6%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 17%;
 
-    --primary: 240 100% 74%;              /* #7c7cff — Noir signature */
-    --primary-foreground: 240 15% 3%;
+    --primary: 340 40% 37%; /* #853953 */
+    --primary-foreground: 180 5% 95%; /* #F3F4F4 */
 
-    --secondary: 240 10% 10%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 316 15% 90%; /* Very pale plum */
+    --secondary-foreground: 316 37% 28%; /* #612D53 */
 
-    --muted: 240 10% 8%;
-    --muted-foreground: 240 5% 50%;
+    --muted: 180 5% 90%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 240 15% 10%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 316 15% 90%;
+    --accent-foreground: 316 37% 28%;
 
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 180 5% 95%;
 
-    --success: 160 60% 45%;
-    --warning: 38 92% 55%;
+    --success: 160 60% 35%;
+    --warning: 38 92% 45%;
 
-    --border: 240 8% 12%;
-    --input: 240 8% 12%;
-    --ring: 240 100% 74%;
+    --border: 180 5% 85%;
+    --input: 180 5% 85%;
+    --ring: 340 40% 37%;
 
     --radius: 0.75rem;
 
@@ -44,9 +44,9 @@
       ui-monospace, monospace;
 
     /* Premium gradient stops */
-    --gradient-primary: linear-gradient(135deg, hsl(240 100% 74%), hsl(260 100% 68%));
+    --gradient-primary: linear-gradient(135deg, hsl(340 40% 37%), hsl(316 37% 28%));
     --gradient-success: linear-gradient(135deg, hsl(160 60% 45%), hsl(142 71% 45%));
-    --gradient-surface: linear-gradient(180deg, hsl(240 12% 7%) 0%, hsl(240 12% 5%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(180 5% 95%) 100%);
   }
 }
 
@@ -56,7 +56,7 @@
   }
   html {
     @apply bg-background;
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
   }
   body {

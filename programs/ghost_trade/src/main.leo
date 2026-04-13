@@ -1,3 +1,5 @@
+import test_usdcx_stablecoin.aleo;
+
 program ghost_trade_v2.aleo {
 
     @noupgrade
@@ -154,5 +156,27 @@ program ghost_trade_v2.aleo {
     fn burn_holding(holding: Holding) -> () {
         assert(holding.amount > 0u64);
         // Record is consumed, nothing is returned — tokens are destroyed.
+    }
+
+    // Buy tokens by paying USDCx (test_usdcx_stablecoin.aleo) to a seller.
+    // USDCx uses u128 amounts (6 decimals, same as USDC).
+    fn buy_with_usdcx(
+        token: field,
+        amount: u64,
+        usdcx_cost: u128,
+        seller: address,
+    ) -> Holding {
+        // Safety: max trade size
+        assert(amount <= 10000u64);
+        assert(usdcx_cost > 0u128);
+
+        // Transfer USDCx to seller via the official stablecoin program
+        test_usdcx_stablecoin.aleo/transfer_public(seller, usdcx_cost);
+
+        return Holding {
+            owner: self.caller,
+            token,
+            amount,
+        };
     }
 }

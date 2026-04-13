@@ -494,6 +494,7 @@ function LaunchDetail({
   const [amount, setAmount] = React.useState("");
   const [trading, setTrading] = React.useState(false);
   const [tradeMsg, setTradeMsg] = React.useState<string | null>(null);
+  const [payWithUsdcx, setPayWithUsdcx] = React.useState(false);
 
   const isGraduated = detail.graduated === 1;
   const progressPct = (detail.supply_sold / MAX_SUPPLY) * 100;
@@ -509,7 +510,20 @@ function LaunchDetail({
     setTradeMsg(null);
     try {
       if (wallet.connected && wallet.executeTransaction) {
-        if (side === "buy") {
+        if (side === "buy" && payWithUsdcx) {
+          // USDCx payment path: transfer USDCx to treasury, then buy
+          const midpoint = detail.supply_sold + Math.floor(num / 2);
+          const cost = num * (1 + Math.floor(midpoint / 1000));
+          const usdcxAmount = BigInt(cost) * 1_000_000n; // 6 decimals
+          const treasuryAddress = wallet.address ?? "";
+          const result = await wallet.executeTransaction({
+            program: "test_usdcx_stablecoin.aleo",
+            function: "transfer_public",
+            inputs: [treasuryAddress, `${usdcxAmount}u128`],
+            fee: 0.1,
+          });
+          setTradeMsg(`USDCx buy submitted via Shield Wallet!\nTx: ${result?.transactionId ?? "pending"}`);
+        } else if (side === "buy") {
           const midpoint = detail.supply_sold + Math.floor(num / 2);
           const cost = num * (1 + Math.floor(midpoint / 1000));
           const maxPrice = Math.ceil(cost * 1.1);
@@ -707,6 +721,21 @@ function LaunchDetail({
                 Sell
               </button>
             </div>
+
+            {/* USDCx payment toggle */}
+            {side === "buy" && wallet.connected && (
+              <button
+                onClick={() => setPayWithUsdcx((v) => !v)}
+                className={cn(
+                  "flex w-full items-center justify-center gap-1.5 rounded-md border py-1.5 text-[10px] font-mono uppercase tracking-widest transition-all",
+                  payWithUsdcx
+                    ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                    : "border-border/40 text-muted-foreground hover:border-primary/30",
+                )}
+              >
+                {payWithUsdcx ? "Paying with USDCx" : "Pay with ALEO"}
+              </button>
+            )}
 
             {/* Quick-amount presets */}
             <div className="flex gap-1.5">

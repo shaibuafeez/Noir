@@ -5,7 +5,7 @@
  * 3. Regex fallback: simple pattern matching for "buy 100 ALEO" style commands
  */
 
-import { callClaude, type AgentContext, type AiResult } from "./ai.js";
+import { callClaude, callGemini, type AgentContext, type AiResult } from "./ai.js";
 
 export type { AgentContext } from "./ai.js";
 
@@ -36,6 +36,7 @@ export interface SendIntent {
   action: "send";
   amount: number;
   recipient: string;
+  token?: string;
 }
 
 export interface StackIntent {
@@ -557,7 +558,13 @@ export async function parseIntent(
     if (aiResult) return aiResult;
   }
 
-  // 2. Try legacy LLM_URL (OpenAI-compatible, kept for backward compat)
+  // 2. Try Gemini if API key configured
+  if (process.env.GEMINI_API_KEY && context) {
+    const geminiResult = await callGemini(text, context);
+    if (geminiResult) return geminiResult;
+  }
+
+  // 3. Try legacy LLM_URL (OpenAI-compatible, kept for backward compat)
   if (process.env.LLM_URL) {
     const llmResult = await parseWithLLM(text, process.env.LLM_URL);
     if (llmResult) return { type: "tool", intent: llmResult };

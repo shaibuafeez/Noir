@@ -7,6 +7,7 @@ import { onTradeExecuted } from "../market/copy.js";
 
 const PROGRAM_ID = "ghost_trade_v2.aleo";
 const CREDITS_PROGRAM = "credits.aleo";
+const USDCX_PROGRAM = "test_usdcx_stablecoin.aleo";
 
 // Re-export tokenToField for backwards compatibility
 export { tokenToField } from "../market/tokens.js";
@@ -171,6 +172,47 @@ export async function transferCredits(
     return {
       txHash: "",
       message: `Transfer failed: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
+/**
+ * Transfer USDCx using test_usdcx_stablecoin.aleo/transfer_public.
+ * USDCx uses u128 amounts with 6 decimals.
+ */
+export async function transferUsdcx(
+  account: Account,
+  recipient: string,
+  amount: number,
+): Promise<{ txHash: string; message: string }> {
+  const config = getNetworkConfig();
+  const pm = createProgramManager(account);
+  const microAmount = `${Math.floor(amount * 1_000_000)}u128`;
+
+  try {
+    console.log("[transfer-usdcx] Sending", amount, "USDCx to", recipient);
+    const txHash = await pm.execute({
+      programName: USDCX_PROGRAM,
+      functionName: "transfer_public",
+      inputs: [recipient, microAmount],
+      priorityFee: config.defaultPriorityFee,
+      privateFee: false,
+    });
+
+    const hash = typeof txHash === "string" ? txHash : String(txHash);
+    console.log("[transfer-usdcx] SUCCESS — tx:", hash);
+
+    return {
+      txHash: hash,
+      message:
+        `Sent ${amount} USDCx to ${recipient.slice(0, 12)}...${recipient.slice(-6)}\n` +
+        `Tx: ${hash}`,
+    };
+  } catch (err) {
+    console.error("[transfer-usdcx] FAILED:", err);
+    return {
+      txHash: "",
+      message: `USDCx transfer failed: ${err instanceof Error ? err.message : String(err)}`,
     };
   }
 }

@@ -2,7 +2,7 @@ import type { Account } from "@provablehq/sdk";
 import type { ParsedIntent } from "./parser.js";
 import { loadWallet } from "../aleo/wallet.js";
 import { getSessionWallet } from "../aleo/session-wallet.js";
-import { executeSwap, transferCredits } from "../aleo/trade.js";
+import { executeSwap, transferCredits, transferUsdcx } from "../aleo/trade.js";
 import { createProgramManager, getNetworkClient } from "../aleo/client.js";
 import { getPrice } from "../market/prices.js";
 import { getMarketContext } from "../market/indicators.js";
@@ -95,16 +95,20 @@ export async function handleIntent(
     }
 
     case "send": {
+      const tokenUpper = (intent.token ?? "ALEO").toUpperCase();
+      const isUsdcx = tokenUpper === "USDC" || tokenUpper === "USDCX";
+      const displayToken = isUsdcx ? "USDCx" : "ALEO";
       return {
         message:
-          `SEND ${intent.amount} ALEO\n` +
+          `SEND ${intent.amount} ${displayToken}\n` +
           `To: ${intent.recipient.slice(0, 12)}...${intent.recipient.slice(-6)}\n\n` +
-          `This will transfer credits on ${getNetworkLabel()}.\nConfirm?`,
+          `This will transfer ${isUsdcx ? "USDCx (test_usdcx_stablecoin.aleo)" : "credits"} on ${getNetworkLabel()}.\nConfirm?`,
         needsConfirmation: true,
         confirmData: JSON.stringify({
           type: "send",
           amount: intent.amount,
           recipient: intent.recipient,
+          token: displayToken,
         }),
       };
     }
@@ -680,6 +684,15 @@ export async function executeConfirmedTrade(
   }
 
   if (data.type === "send") {
+    const sendToken = ((data.token as string) ?? "ALEO").toUpperCase();
+    if (sendToken === "USDCX" || sendToken === "USDC") {
+      const result = await transferUsdcx(
+        account,
+        data.recipient as string,
+        data.amount as number,
+      );
+      return result.message;
+    }
     const result = await transferCredits(
       account,
       data.recipient as string,

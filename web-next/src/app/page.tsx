@@ -51,17 +51,11 @@ function useIsMobile() {
   return mobile;
 }
 
-/* ─── NavLink with animated underline ─── */
+/* ─── Minimalist NavLink ─── */
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} className="group relative text-muted-foreground transition-colors hover:text-foreground">
+    <a href={href} className="group relative text-muted-foreground/80 transition-all duration-300 hover:opacity-100 hover:text-foreground">
       {children}
-      <motion.span
-        className="absolute -bottom-1 left-0 h-px w-full origin-left bg-primary"
-        initial={{ scaleX: 0 }}
-        whileHover={{ scaleX: 1 }}
-        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      />
     </a>
   );
 }
@@ -78,88 +72,79 @@ function FloatingHeader() {
 
   return (
     <>
-      <motion.header
-        className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
-        animate={{
-          backgroundColor: scrolled
-            ? "hsla(240, 15%, 3%, 0.8)"
-            : "hsla(240, 15%, 3%, 0)",
-          backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
-          borderBottomWidth: scrolled ? 1 : 0,
-          borderBottomColor: scrolled
-            ? "hsla(240, 100%, 74%, 0.1)"
-            : "transparent",
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6" style={{ height: scrolled ? 56 : 64 }}>
-          <div className="flex items-center gap-2.5">
-            <motion.div
-              className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/25"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            >
-              <Eclipse className="h-4 w-4 text-primary" />
+      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center w-full px-4 pointer-events-none">
+        <motion.header
+          className="pointer-events-auto w-full max-w-5xl rounded-full transition-all duration-500 border border-transparent overflow-hidden"
+          animate={{
+            backgroundColor: scrolled ? "hsla(240, 15%, 5%, 0.75)" : "transparent",
+            backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
+            borderColor: scrolled ? "hsla(0, 0%, 100%, 0.08)" : "transparent",
+            boxShadow: scrolled ? "0 10px 30px -10px rgba(0,0,0,0.3)" : "none",
+            y: scrolled ? 0 : 8,
+          }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="flex items-center justify-between px-6 py-3 transition-all duration-300">
+            <div className="flex items-center gap-3">
               <motion.div
-                className="absolute -inset-1.5 -z-10 rounded-xl bg-primary/5 blur-lg"
-                animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.div>
-            <span className="text-sm font-semibold tracking-tight">Noir</span>
-            <Badge variant="outline" className="ml-2 font-mono text-[10px]">
-              v0.1 · alpha
-            </Badge>
-          </div>
-          <nav className="hidden items-center gap-8 text-sm md:flex">
-            <NavLink href="#features">Features</NavLink>
-            <NavLink href="#how">How it works</NavLink>
-            <a
-              href="https://aleo.org"
-              target="_blank"
-              rel="noreferrer"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Aleo
-            </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Button asChild size="sm" className="hidden md:inline-flex">
-              <Link href="/dashboard">
-                Launch App <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
-            <button
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground md:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-        </div>
+                className="relative flex h-8 w-8 items-center justify-center text-foreground"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              >
+                <Eclipse className="h-5 w-5" />
+              </motion.div>
+              <span className="text-base font-medium tracking-wide">Noir</span>
+            </div>
+            
+            <nav className="hidden items-center gap-8 text-sm font-medium tracking-wide md:flex">
+              <NavLink href="#features">Features</NavLink>
+              <NavLink href="#how">How it works</NavLink>
+              <a
+                href="https://aleo.org"
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground/80 transition-all duration-300 hover:opacity-100 hover:text-foreground"
+              >
+                Aleo
+              </a>
+            </nav>
 
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden border-t border-primary/10 bg-background/95 backdrop-blur-xl md:hidden"
-            >
-              <div className="flex flex-col gap-4 px-6 py-6">
-                <a href="#features" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Features</a>
-                <a href="#how" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>How it works</a>
-                <a href="https://aleo.org" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground hover:text-foreground">Aleo</a>
-                <Button asChild size="sm" className="w-full">
-                  <Link href="/dashboard">Launch App</Link>
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+            <div className="flex items-center gap-3">
+              <Button asChild size="sm" variant="outline" className="hidden md:inline-flex rounded-full border-border/40 px-5 text-xs font-medium uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors duration-300">
+                <Link href="/dashboard">Launch</Link>
+              </Button>
+              <button
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground md:hidden"
+                onClick={() => setMobileOpen(!mobileOpen)}
+              >
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile menu - embedded inside the pill */}
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="border-t border-white/5 bg-transparent md:hidden"
+              >
+                <div className="flex flex-col gap-4 px-6 py-6 pb-8">
+                  <a href="#features" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>Features</a>
+                  <a href="#how" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>How it works</a>
+                  <a href="https://aleo.org" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground/80 hover:text-foreground">Aleo</a>
+                  <Button asChild size="sm" variant="outline" className="w-full rounded-full border-border/40 hover:bg-foreground hover:text-background mt-2">
+                    <Link href="/dashboard">Launch Dashboard</Link>
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.header>
+      </div>
 
       {/* Spacer */}
       <div className="h-16" />
@@ -264,33 +249,33 @@ function StatsTicker() {
   }, []);
 
   return (
-    <div ref={ref} className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-sm text-muted-foreground/70">
-      <div className="flex items-center gap-2">
+    <div ref={ref} className="mt-24 flex flex-wrap items-center justify-center gap-x-16 gap-y-6 font-mono text-sm tracking-widest text-muted-foreground/60 uppercase">
+      <div className="flex flex-col items-center gap-1">
         <AnimatedNumber
           value={inView ? 1234 : 0}
           format={(n) => Math.round(n).toLocaleString()}
-          className="text-foreground tabular-nums"
+          className="text-xl font-medium text-foreground tabular-nums tracking-tight"
         />
-        <span>trades executed</span>
+        <span className="text-[10px]">Trades Executed</span>
       </div>
-      <span className="text-primary/30">|</span>
-      <div className="flex items-center gap-2">
-        <span className="text-foreground">$</span>
-        <AnimatedNumber
-          value={inView ? 45 : 0}
-          format={(n) => `${Math.round(n)}M`}
-          className="text-foreground tabular-nums"
-        />
-        <span>volume</span>
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center">
+          <span className="text-xl font-medium text-foreground tracking-tight">$</span>
+          <AnimatedNumber
+            value={inView ? 45 : 0}
+            format={(n) => `${Math.round(n)}M`}
+            className="text-xl font-medium text-foreground tabular-nums tracking-tight"
+          />
+        </div>
+        <span className="text-[10px]">Volume</span>
       </div>
-      <span className="text-primary/30">|</span>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center gap-1">
         <AnimatedNumber
           value={inView ? 100 : 0}
           format={(n) => `${Math.round(n)}%`}
-          className="text-foreground tabular-nums"
+          className="text-xl font-medium text-foreground tabular-nums tracking-tight"
         />
-        <span>private</span>
+        <span className="text-[10px]">Private</span>
       </div>
     </div>
   );
@@ -341,68 +326,22 @@ export default function Landing() {
       <FloatingHeader />
 
       {/* ─── HERO ─── */}
-      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-28 pt-20 text-center md:pt-32">
+      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-40 pt-32 text-center md:pb-56 md:pt-48">
         <FadeIn>
-          <Badge variant="outline" className="mb-8 font-mono text-[11px]">
-            <PulseGlow color="primary" size={5} />
-            <span className="ml-2">ZERO-KNOWLEDGE TRADING · LIVE ON ALEO</span>
+          <Badge variant="outline" className="mb-12 font-mono text-[10px] tracking-widest uppercase border-border/40 text-muted-foreground">
+            Zero-Knowledge Trading · Live on Aleo
           </Badge>
         </FadeIn>
 
-        <div style={{ perspective: 1000 }}>
-          <h1 className="mx-auto max-w-4xl text-balance text-5xl font-semibold tracking-tight md:text-7xl lg:text-8xl">
-            {["Your", "portfolio"].map((word, i) => (
-              <motion.span
-                key={i}
-                className="inline-block"
-                initial={{ opacity: 0, y: 40, rotateX: 45 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{
-                  duration: 0.7,
-                  delay: i * 0.08,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                {word}{i === 0 ? "\u00A0" : ""}
-              </motion.span>
-            ))}
-            <br />
-            {["is", "a"].map((word, i) => (
-              <motion.span
-                key={i}
-                className="inline-block"
-                initial={{ opacity: 0, y: 40, rotateX: 45 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{
-                  duration: 0.7,
-                  delay: 0.16 + i * 0.08,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                {word}{"\u00A0"}
-              </motion.span>
-            ))}{" "}
-            <span className="relative inline-block">
-              <DecryptText text="secret" delay={0.6} className="gradient-text glow" />
-              <motion.span
-                className="absolute -inset-2 -z-10 rounded-2xl bg-primary/5 blur-2xl"
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </span>
-            <motion.span
-              className="inline-block"
-              initial={{ opacity: 0, y: 40, rotateX: 45 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              .
-            </motion.span>
+        <FadeIn delay={0.2}>
+          <h1 className="mx-auto max-w-5xl text-balance text-6xl font-medium tracking-tighter md:text-8xl lg:text-[7.5rem] leading-[1.1]">
+            Your portfolio<br />
+            is a <span className="text-muted-foreground/60 italic font-serif">secret.</span>
           </h1>
-        </div>
+        </FadeIn>
 
-        <FadeIn delay={0.5}>
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+        <FadeIn delay={0.4}>
+          <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl leading-relaxed text-muted-foreground/80 font-light">
             Noir is an AI trading agent that runs on Aleo&apos;s private
             zkVM. Every trade is a zero-knowledge proof. Nobody sees what
             you hold, what you buy, or who you copy.
@@ -410,49 +349,17 @@ export default function Landing() {
         </FadeIn>
 
         <FadeIn delay={0.6}>
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            {isMobile ? (
-              <Button asChild size="lg" className="group">
-                <Link href="/dashboard">
-                  Open Dashboard
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </Button>
-            ) : (
-              <MagneticButton>
-                <Button asChild size="lg" className="group">
-                  <Link href="/dashboard">
-                    Open Dashboard
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </Button>
-              </MagneticButton>
-            )}
-            <Button asChild variant="outline" size="lg">
+          <div className="mt-16 flex flex-col items-center justify-center gap-5 sm:flex-row">
+            <Button asChild size="lg" className="rounded-full px-8 font-medium">
+              <Link href="/dashboard">Launch Dashboard</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full border-border/40 px-8 hover:bg-foreground hover:text-background transition-colors duration-300">
               <Link href="/chat">Try the agent</Link>
             </Button>
-            <GoogleSignInButton />
           </div>
         </FadeIn>
 
         <StatsTicker />
-
-        <FadeIn delay={0.8}>
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-xs font-mono uppercase tracking-widest text-muted-foreground/70">
-            <div className="flex items-center gap-2.5">
-              <Lock className="h-3.5 w-3.5" /> private records
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Cpu className="h-3.5 w-3.5" /> zk proofs
-            </div>
-            <div className="flex items-center gap-2.5">
-              <EyeOff className="h-3.5 w-3.5" /> go dark
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Eclipse className="h-3.5 w-3.5" /> copy trading
-            </div>
-          </div>
-        </FadeIn>
       </section>
 
       {/* ─── FEATURES ─── */}

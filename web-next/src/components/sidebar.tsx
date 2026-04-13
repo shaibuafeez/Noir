@@ -44,6 +44,11 @@ export function Sidebar() {
     [sessionId],
     Boolean(sessionId),
   );
+  const usdcxBalance = useApi(
+    () => api.balanceUsdcx(sessionId!),
+    [sessionId],
+    Boolean(sessionId),
+  );
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border/60 bg-card/40 backdrop-blur-xl lg:block">
@@ -181,7 +186,7 @@ export function Sidebar() {
               {walletAddress && (
                 <CopyAddress address={walletAddress} />
               )}
-              <BalanceDisplay credits={balance.data?.balanceCredits ?? 0} loading={balance.loading} />
+              <BalanceDisplay credits={balance.data?.balanceCredits ?? 0} usdcx={usdcxBalance.data?.balanceUsdcx ?? 0} loading={balance.loading} usdcxLoading={usdcxBalance.loading} />
               <button
                 onClick={signOut}
                 className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
@@ -196,7 +201,7 @@ export function Sidebar() {
                 wallet
               </div>
               <CopyAddress address={walletAddress} />
-              <BalanceDisplay credits={balance.data?.balanceCredits ?? 0} loading={balance.loading} />
+              <BalanceDisplay credits={balance.data?.balanceCredits ?? 0} usdcx={usdcxBalance.data?.balanceUsdcx ?? 0} loading={balance.loading} usdcxLoading={usdcxBalance.loading} />
               <div className="mt-2.5">
                 <ConnectWallet />
               </div>
@@ -214,29 +219,54 @@ export function Sidebar() {
 
 function BalanceDisplay({
   credits,
+  usdcx,
   loading,
+  usdcxLoading,
 }: {
   credits: number;
+  usdcx?: number;
   loading: boolean;
+  usdcxLoading?: boolean;
 }) {
   return (
-    <div className="mt-2 rounded-md border border-border/30 bg-background/30 p-2">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-        On-chain Balance
-      </div>
-      <div className="mt-1 flex items-baseline gap-1.5">
-        <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
-          {loading ? (
-            <span className="text-muted-foreground text-sm">...</span>
-          ) : (
-            credits.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 })
-          )}
-        </span>
-        {!loading && (
-          <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            ALEO
+    <div className="mt-2 space-y-1.5">
+      <div className="rounded-md border border-border/30 bg-background/30 p-2">
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          ALEO Balance
+        </div>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
+            {loading ? (
+              <span className="text-muted-foreground text-sm">...</span>
+            ) : (
+              credits.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+            )}
           </span>
-        )}
+          {!loading && (
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              ALEO
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="rounded-md border border-border/30 bg-background/30 p-2">
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          USDCx Balance
+        </div>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
+            {usdcxLoading ? (
+              <span className="text-muted-foreground text-sm">...</span>
+            ) : (
+              `$${(usdcx ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            )}
+          </span>
+          {!usdcxLoading && (
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              USDCx
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

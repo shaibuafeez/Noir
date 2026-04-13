@@ -18,46 +18,44 @@ program ghost_zklogin_v1.aleo {
     // Allows on-chain verification that an OAuth identity is linked to an address.
     mapping commitments: field => address;
 
-    // ── Transitions ──
+    // ── Functions ──
 
     // Register a zkLogin commitment on-chain.
     // The commitment is a hash of (salt, issuer, subject) computed off-chain.
     // This creates a private credential record and writes the mapping.
-    transition register_zklogin(
+    fn register_zklogin(
         commitment: field,
         timestamp: u64,
-    ) -> ZkLoginCredential {
+    ) -> (ZkLoginCredential, Final) {
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
             commitment,
             issued_at: timestamp,
         };
-        return credential then finalize(commitment, self.caller);
-    }
-
-    finalize register_zklogin(commitment: field, owner: address) {
-        // Write the commitment → address mapping.
-        // If already registered, this will overwrite (allows key rotation).
-        Mapping::set(commitments, commitment, owner);
+        let caller: address = self.caller;
+        return (credential, final {
+            // Write the commitment → address mapping.
+            // If already registered, this will overwrite (allows key rotation).
+            commitments.set(commitment, caller);
+        });
     }
 
     // Verify that a commitment is registered and produce a fresh credential.
     // This reads the on-chain mapping to confirm the link exists.
-    transition verify_identity(
+    fn verify_identity(
         commitment: field,
         timestamp: u64,
-    ) -> ZkLoginCredential {
+    ) -> (ZkLoginCredential, Final) {
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
             commitment,
             issued_at: timestamp,
         };
-        return credential then finalize(commitment, self.caller);
-    }
-
-    finalize verify_identity(commitment: field, expected_owner: address) {
-        // Read the mapping and assert it matches the caller.
-        let registered: address = Mapping::get(commitments, commitment);
-        assert_eq(registered, expected_owner);
+        let caller: address = self.caller;
+        return (credential, final {
+            // Read the mapping and assert it matches the caller.
+            let registered: address = commitments.get(commitment);
+            assert_eq(registered, caller);
+        });
     }
 }

@@ -23,6 +23,7 @@ program ghost_launchpad_v1.aleo {
     mapping supply_sold: field => u64;
     mapping graduated: field => bool;
     mapping launch_creators: field => address;
+    mapping treasury: field => u128;
 
     // ── Transitions ──
 
@@ -131,4 +132,8 @@ program ghost_launchpad_v1.aleo {
             amount: a.amount + b.amount,
         };
     }
+
+    // USDCx cross-program payment integration planned — requires Leo support
+    // for external calls in finalize blocks. USDCx payments are currently
+    // handled off-chain via the backend before calling buy_token().
 }

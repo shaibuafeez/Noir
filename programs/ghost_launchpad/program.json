@@ -3,5 +3,14 @@
   "version": "0.1.0",
   "description": "Bonding curve launchpad with private holdings",
   "license": "MIT",
-  "leo": "4.0.0"
+  "leo": "4.0.0",
+  "dependencies": [
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "network",
+      "path": null,
+      "edition": null
+    }
+  ],
+  "dev_dependencies": null
 }
