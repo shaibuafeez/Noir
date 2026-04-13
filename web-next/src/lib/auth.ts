@@ -61,9 +61,14 @@ export function parseAuthFromUrl(): AuthSession | null {
 export function getGoogleSignInUrl(): string {
   if (typeof window === "undefined") return "/auth/google";
   // In dev (Next.js on 3002), point at backend on 3000
-  const host =
-    window.location.port === "3002"
-      ? `${window.location.hostname}:3000`
-      : window.location.host;
-  return `${window.location.protocol}//${host}/auth/google`;
+  if (window.location.port === "3002") {
+    return `${window.location.protocol}//${window.location.hostname}:3000/auth/google`;
+  }
+  // In prod (served from backend on 3000), use same host
+  if (window.location.port === "3000") {
+    return `${window.location.protocol}//${window.location.host}/auth/google`;
+  }
+  // In prod (Vercel frontend), point at Railway backend
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://noir-backend-production-d2b0.up.railway.app";
+  return `${backendUrl}/auth/google`;
 }

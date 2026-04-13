@@ -16,6 +16,8 @@ import {
   Copy,
   Check,
   Rocket,
+  BookOpen,
+  Fingerprint,
 } from "lucide-react";
 import { cn, shortAddress, formatUsd } from "@/lib/utils";
 import { useWs } from "@/lib/ws-context";
@@ -23,7 +25,7 @@ import { ConnectWallet } from "./connect-wallet";
 import { motion } from "framer-motion";
 import { PulseGlow } from "./motion";
 import { api, useApi } from "@/lib/api";
-import { useWallet, WalletMultiButton } from "@/lib/wallet-provider";
+import { useWallet } from "@/lib/wallet-provider";
 import { Shield } from "lucide-react";
 
 const NAV = [
@@ -33,6 +35,8 @@ const NAV = [
   { href: "/strategies", label: "Strategies", icon: Zap },
   { href: "/market", label: "Market", icon: BarChart3 },
   { href: "/history", label: "History", icon: History },
+  { href: "/privacy", label: "Privacy", icon: Fingerprint },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ] as const;
 
 export function Sidebar() {
@@ -53,17 +57,33 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border/60 bg-card/40 backdrop-blur-xl lg:block">
       <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-border/40 px-6">
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/25">
-            <Eclipse className="h-4 w-4 text-primary" />
-            <div className="absolute -inset-1 -z-10 rounded-lg bg-primary/5 blur-md" />
+        {/* Logo + Connect */}
+        <div className="flex h-16 items-center justify-between border-b border-border/40 px-6">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/25">
+              <Eclipse className="h-4 w-4 text-primary" />
+              <div className="absolute -inset-1 -z-10 rounded-lg bg-primary/5 blur-md" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold tracking-tight">Noir</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                aleo · private
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold tracking-tight">Noir</span>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              aleo · private
-            </span>
+          <div className="ml-auto shrink-0">
+            {shield.connected ? (
+              <button
+                onClick={() => shield.disconnect()}
+                className="flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-1.5 text-[10px] font-mono text-primary/80 transition-all hover:border-destructive/30 hover:text-destructive"
+                title="Disconnect Shield Wallet"
+              >
+                <Shield className="h-3 w-3" />
+                {shield.address ? shortAddress(shield.address, 4) : "Connected"}
+              </button>
+            ) : !authSession ? (
+              <ConnectWallet compact />
+            ) : null}
           </div>
         </div>
 
@@ -113,38 +133,6 @@ export function Sidebar() {
 
         {/* Footer — status + wallet */}
         <div className="border-t border-border/40 p-4">
-          {/* Shield Wallet */}
-          <div className="mb-3 rounded-lg border border-border/40 bg-background/40 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                Shield Wallet
-              </span>
-            </div>
-            {shield.connected ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <PulseGlow color="success" size={4} />
-                  <span className="font-mono text-[10px] text-[hsl(var(--success))]">CONNECTED</span>
-                </div>
-                {shield.address && (
-                  <CopyAddress address={shield.address} />
-                )}
-                <button
-                  onClick={() => shield.disconnect()}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
-                >
-                  <LogOut className="h-3 w-3" />
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <WalletMultiButton
-                className="!w-full !rounded-md !border !border-primary/30 !bg-primary/10 !px-3 !py-2 !text-xs !font-medium !text-primary !transition-all hover:!bg-primary/20"
-              />
-            )}
-          </div>
-
           <div className="flex items-center gap-2 text-xs">
             {connected ? (
               <>
@@ -299,7 +287,8 @@ function CopyAddress({ address }: { address: string }) {
 }
 
 export function MobileHeader() {
-  const { connected } = useWs();
+  const { connected, authSession } = useWs();
+  const shield = useWallet();
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/40 bg-background/60 px-4 backdrop-blur-xl lg:hidden">
       <div className="flex items-center gap-2.5">
@@ -308,18 +297,31 @@ export function MobileHeader() {
         </div>
         <span className="text-sm font-semibold">Noir</span>
       </div>
-      <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest">
-        {connected ? (
-          <>
-            <PulseGlow color="success" size={4} />
-            <span className="text-[hsl(var(--success))]">online</span>
-          </>
-        ) : (
-          <>
-            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-            <span className="text-destructive">offline</span>
-          </>
-        )}
+      <div className="flex items-center gap-3">
+        {shield.connected ? (
+          <button
+            onClick={() => shield.disconnect()}
+            className="flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-1.5 text-[10px] font-mono text-primary/80 transition-all hover:border-destructive/30 hover:text-destructive"
+          >
+            <Shield className="h-3 w-3" />
+            {shield.address ? shortAddress(shield.address, 4) : "Connected"}
+          </button>
+        ) : !authSession ? (
+          <ConnectWallet compact />
+        ) : null}
+        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest">
+          {connected ? (
+            <>
+              <PulseGlow color="success" size={4} />
+              <span className="text-[hsl(var(--success))]">online</span>
+            </>
+          ) : (
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+              <span className="text-destructive">offline</span>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

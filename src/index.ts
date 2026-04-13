@@ -12,6 +12,11 @@ import { validateNetwork } from "./aleo/network.js";
 import { prewarmKeys } from "./aleo/key-cache.js";
 import { setCopyBot } from "./market/copy.js";
 
+// Prevent WS/network errors from crashing the process
+process.on("uncaughtException", (err) => {
+  console.error("[uncaught]", err.message);
+});
+
 function main(): void {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {

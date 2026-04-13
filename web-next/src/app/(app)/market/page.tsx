@@ -16,6 +16,7 @@ import {
 import { cn, formatNumber, formatUsd, formatPct } from "@/lib/utils";
 import { api, useApi } from "@/lib/api";
 import type { MarketToken } from "@/lib/api";
+import { useWs, type LiveMarketToken } from "@/lib/ws-context";
 
 type SortKey = "price" | "change24h" | "rsi";
 
@@ -26,8 +27,10 @@ export default function MarketPage() {
     null,
   );
 
-  const market = useApi(() => api.market(), [], true, 10_000);
-  const tokens = market.data ?? [];
+  // Live prices via WebSocket (updates every 5s, no HTTP polling)
+  const { liveMarket } = useWs();
+  const tokens = liveMarket as MarketToken[];
+  const marketLoading = tokens.length === 0;
 
   React.useEffect(() => {
     if (!selectedSymbol && tokens.length > 0) {
@@ -89,7 +92,7 @@ export default function MarketPage() {
             icon={TrendingUp}
             tone="success"
             tokens={topGainers}
-            loading={market.loading}
+            loading={marketLoading}
           />
         </StaggerItem>
         <StaggerItem>
@@ -98,7 +101,7 @@ export default function MarketPage() {
             icon={TrendingDown}
             tone="destructive"
             tokens={topLosers}
-            loading={market.loading}
+            loading={marketLoading}
           />
         </StaggerItem>
       </StaggerContainer>
@@ -138,7 +141,7 @@ export default function MarketPage() {
                   RSI
                 </SortHeader>
               </div>
-              {market.loading ? (
+              {marketLoading ? (
                 <div className="space-y-3 p-4">
                   {[1, 2, 3, 4].map((i) => (
                     <Shimmer key={i} height="44px" className="w-full" />
@@ -211,7 +214,7 @@ export default function MarketPage() {
           <Card className="h-full">
             {!selected ? (
               <CardContent className="flex h-full items-center justify-center p-10 text-center text-sm text-muted-foreground">
-                {market.loading ? (
+                {marketLoading ? (
                   <div className="space-y-3">
                     <Shimmer width="120px" height="24px" className="mx-auto" />
                     <Shimmer width="80px" height="16px" className="mx-auto" />

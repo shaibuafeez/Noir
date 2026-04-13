@@ -15,6 +15,10 @@ import {
   Cpu,
   Menu,
   X,
+  LayoutDashboard,
+  Mic,
+  MessageSquare as MessageSquareIcon,
+  Terminal,
 } from "lucide-react";
 import {
   useScroll,
@@ -76,10 +80,10 @@ function FloatingHeader() {
         <motion.header
           className="pointer-events-auto w-full max-w-5xl rounded-full transition-all duration-500 border border-transparent overflow-hidden"
           animate={{
-            backgroundColor: scrolled ? "hsla(240, 15%, 5%, 0.75)" : "transparent",
+            backgroundColor: scrolled ? "hsla(0, 0%, 100%, 0.75)" : "transparent",
             backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
-            borderColor: scrolled ? "hsla(0, 0%, 100%, 0.08)" : "transparent",
-            boxShadow: scrolled ? "0 10px 30px -10px rgba(0,0,0,0.3)" : "none",
+            borderColor: scrolled ? "hsla(0, 0%, 0%, 0.08)" : "hsla(0, 0%, 0%, 0.03)",
+            boxShadow: scrolled ? "0 10px 30px -10px rgba(0,0,0,0.06)" : "none",
             y: scrolled ? 0 : 8,
           }}
           transition={{ duration: 0.4 }}
@@ -98,6 +102,7 @@ function FloatingHeader() {
             
             <nav className="hidden items-center gap-8 text-sm font-medium tracking-wide md:flex">
               <NavLink href="#features">Features</NavLink>
+              <NavLink href="#platforms">Platforms</NavLink>
               <NavLink href="#how">How it works</NavLink>
               <a
                 href="https://aleo.org"
@@ -134,6 +139,7 @@ function FloatingHeader() {
               >
                 <div className="flex flex-col gap-4 px-6 py-6 pb-8">
                   <a href="#features" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>Features</a>
+                  <a href="#platforms" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>Platforms</a>
                   <a href="#how" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>How it works</a>
                   <a href="https://aleo.org" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground/80 hover:text-foreground">Aleo</a>
                   <Button asChild size="sm" variant="outline" className="w-full rounded-full border-border/40 hover:bg-foreground hover:text-background mt-2">
@@ -346,6 +352,9 @@ export default function Landing() {
             zkVM. Every trade is a zero-knowledge proof. Nobody sees what
             you hold, what you buy, or who you copy.
           </p>
+          <p className="mx-auto mt-4 text-sm font-medium text-primary/80 tracking-wide">
+            Available on Web, Voice, Telegram, Discord, CLI &amp; SDK
+          </p>
         </FadeIn>
 
         <FadeIn delay={0.6}>
@@ -417,6 +426,118 @@ export default function Landing() {
                 desc='One command: "go dark". All public balances move to private records. Your wallet vanishes from explorers.'
               />
             </StaggerItem>
+            <StaggerItem>
+              <FeatureCard
+                icon={Cpu}
+                title="Developer SDK"
+                desc="npm install @noir-protocol/sdk — trade, launch tokens, ZK proofs, technical indicators. Build on Noir."
+              />
+            </StaggerItem>
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* ─── TRY NOIR EVERYWHERE ─── */}
+      <section id="platforms" className="relative z-10 border-t border-border/30">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent pointer-events-none" />
+        <div className="relative mx-auto max-w-7xl px-6 py-28">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
+              <SplitText>6 interfaces. One agent.</SplitText>
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Trade from wherever you are — every interface connects to the same private engine.
+            </p>
+          </div>
+
+          <StaggerContainer className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" delay={0.2}>
+            {[
+              {
+                icon: LayoutDashboard,
+                title: "Web Dashboard",
+                desc: "Full portfolio view, charts, strategies, and launchpad. Sign in with Google for a persistent zkLogin wallet.",
+                cta: "Launch Dashboard",
+                href: "/dashboard",
+                external: false,
+              },
+              {
+                icon: Mic,
+                title: "Voice Agent",
+                desc: "Speak naturally to trade. Powered by Gemini Live API with real-time audio. Just click the mic in Chat.",
+                cta: "Try Voice",
+                href: "/chat",
+                external: false,
+              },
+              {
+                icon: MessageSquareIcon,
+                title: "Telegram Bot",
+                desc: "Trade from any Telegram chat. DM the bot with commands like \"buy 100 ALEO\" or \"go dark\".",
+                cta: "Open in Telegram",
+                href: "https://t.me/noir_aleobot",
+                external: true,
+              },
+              {
+                icon: MessageSquareIcon,
+                title: "Discord Bot",
+                desc: "Add Noir to your server. Use slash commands to trade, check portfolio, and set alerts with your community.",
+                cta: "Add to Discord",
+                href: "https://discord.com/oauth2/authorize?client_id=1490862109452537956&permissions=274877910016&scope=bot%20applications.commands",
+                external: true,
+              },
+              {
+                icon: Terminal,
+                title: "CLI & MCP Server",
+                desc: "Pipe commands from your terminal or connect via Model Context Protocol for AI-to-AI trading workflows.",
+                cta: "View Docs",
+                href: "/docs",
+                external: false,
+              },
+              {
+                icon: Cpu,
+                title: "Developer SDK",
+                desc: "npm install @noir-protocol/sdk — trade, launch tokens, compute ZK proofs, and run technical indicators.",
+                cta: "SDK Reference",
+                href: "/docs/sdk",
+                external: false,
+              },
+            ].map((p) => (
+              <StaggerItem key={p.title}>
+                <TiltCard className="group flex h-full flex-col p-6 transition-all duration-300 hover:border-primary/20">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 transition-colors group-hover:bg-primary/12">
+                      <p.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold">{p.title}</h3>
+                      <span className="flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest text-[hsl(var(--success))]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))] animate-pulse" />
+                        Live
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+                    {p.desc}
+                  </p>
+                  {p.external ? (
+                    <a
+                      href={p.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    >
+                      {p.cta} <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  ) : (
+                    <Link
+                      href={p.href}
+                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    >
+                      {p.cta} <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                </TiltCard>
+              </StaggerItem>
+            ))}
           </StaggerContainer>
         </div>
       </section>
@@ -459,8 +580,10 @@ export default function Landing() {
           <div className="flex items-center gap-2 font-mono uppercase tracking-widest">
             <Eclipse className="h-3 w-3 text-primary/50" /> noir · private · aleo
           </div>
-          <div className="font-mono tracking-wider">
-            ghost_trade_v2.aleo
+          <div className="flex items-center gap-6">
+            <a href="#platforms" className="font-mono uppercase tracking-widest hover:text-foreground transition-colors">Platforms</a>
+            <a href="https://github.com/0N1M0/noir-protocol" target="_blank" rel="noreferrer" className="font-mono uppercase tracking-widest hover:text-foreground transition-colors">GitHub</a>
+            <span className="font-mono tracking-wider">ghost_trade_v3.aleo</span>
           </div>
         </div>
       </footer>
@@ -555,19 +678,22 @@ function FeatureCard({
   desc: string;
 }) {
   return (
-    <TiltCard className="group p-6 transition-all duration-300 hover:border-primary/20">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 transition-colors group-hover:bg-primary/12 group-hover:ring-primary/25">
+    <TiltCard className="group relative overflow-hidden rounded-3xl border-2 border-border/40 bg-card p-10 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-2xl">
+      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/[0.04] blur-3xl transition-all duration-700 group-hover:bg-primary/10 group-hover:scale-150" />
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-2 ring-primary/20 shadow-inner transition-colors duration-500 group-hover:bg-primary/20 group-hover:ring-primary/40">
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Icon className="h-5 w-5 text-primary" />
+          <Icon className="h-7 w-7 text-primary" />
         </motion.div>
       </div>
-      <h3 className="mt-5 text-base font-semibold">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {desc}
-      </p>
+      <div className="relative mt-10">
+        <h3 className="text-2xl font-bold tracking-tight text-foreground">{title}</h3>
+        <p className="mt-3 text-base leading-relaxed font-medium text-muted-foreground/80">
+          {desc}
+        </p>
+      </div>
     </TiltCard>
   );
 }

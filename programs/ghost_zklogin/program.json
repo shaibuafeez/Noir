@@ -1,7 +1,7 @@
 {
-  "program": "ghost_zklogin_v1.aleo",
+  "program": "ghost_zklogin_v2.aleo",
   "version": "0.1.0",
   "description": "On-chain commitment registry linking OAuth identities (hashed) to Aleo addresses",
   "license": "MIT",
-  "leo": "4.0.0"
+  "leo": "4.0.1"
 }

@@ -5,7 +5,7 @@ import { tokenToField } from "../market/tokens.js";
 import { recordTrade } from "../storage/db.js";
 import { onTradeExecuted } from "../market/copy.js";
 
-const PROGRAM_ID = "ghost_trade_v2.aleo";
+const PROGRAM_ID = "ghost_trade_v3.aleo";
 const CREDITS_PROGRAM = "credits.aleo";
 const USDCX_PROGRAM = "test_usdcx_stablecoin.aleo";
 

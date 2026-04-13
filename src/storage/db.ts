@@ -172,6 +172,22 @@ export function initDb(path = "noir.db"): Database.Database {
     "CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_sub)",
   );
 
+  // ── Launches social links migration ──
+  const launchCols = db.pragma("table_info(launches)") as { name: string }[];
+  const launchColNames = new Set(launchCols.map((c) => c.name));
+  if (!launchColNames.has("website_url")) {
+    db.exec("ALTER TABLE launches ADD COLUMN website_url TEXT DEFAULT ''");
+  }
+  if (!launchColNames.has("twitter_url")) {
+    db.exec("ALTER TABLE launches ADD COLUMN twitter_url TEXT DEFAULT ''");
+  }
+  if (!launchColNames.has("telegram_url")) {
+    db.exec("ALTER TABLE launches ADD COLUMN telegram_url TEXT DEFAULT ''");
+  }
+  if (!launchColNames.has("discord_url")) {
+    db.exec("ALTER TABLE launches ADD COLUMN discord_url TEXT DEFAULT ''");
+  }
+
   return db;
 }
 
@@ -684,6 +700,10 @@ export interface LaunchRow {
   ticker: string;
   description: string;
   image_url: string;
+  website_url: string;
+  twitter_url: string;
+  telegram_url: string;
+  discord_url: string;
   created_at: string;
 }
 
@@ -693,13 +713,31 @@ export function insertLaunch(
   name: string,
   ticker: string,
   description: string,
+  extra?: {
+    image_url?: string;
+    website_url?: string;
+    twitter_url?: string;
+    telegram_url?: string;
+    discord_url?: string;
+  },
 ): void {
   getDb()
     .prepare(
-      `INSERT INTO launches (launch_id, creator_id, name, ticker, description)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO launches (launch_id, creator_id, name, ticker, description, image_url, website_url, twitter_url, telegram_url, discord_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(launchId, creatorId, name, ticker, description);
+    .run(
+      launchId,
+      creatorId,
+      name,
+      ticker,
+      description,
+      extra?.image_url ?? "",
+      extra?.website_url ?? "",
+      extra?.twitter_url ?? "",
+      extra?.telegram_url ?? "",
+      extra?.discord_url ?? "",
+    );
 }
 
 export function getLaunch(launchId: string): LaunchRow | undefined {

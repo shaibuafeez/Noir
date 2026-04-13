@@ -20,6 +20,12 @@ import {
   getUserPendingOrders,
   getDecisionHistory,
   getPriceHistory,
+  createDcaStrategy,
+  createPendingOrder,
+  createAlert,
+  createProtection,
+  createRebalanceStrategy,
+  createCopyStrategy,
   type TradeHistoryRow,
 } from "../storage/db.js";
 import {
@@ -388,6 +394,80 @@ export async function handleApiRequest(
         return ok(res, getTradableTokens()), true;
       }
 
+      // ── Strategy creation endpoints ──
+
+      case "/api/strategies/dca": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ token?: string; amount?: number; interval?: string }>(req);
+        if (!body.token || !body.amount || !body.interval) {
+          return err(res, 400, "token, amount, and interval required"), true;
+        }
+        const id = createDcaStrategy(sessionId, body.token.toUpperCase(), body.amount, body.interval);
+        return ok(res, { id, message: `DCA strategy created: ${body.amount} into ${body.token} ${body.interval}` }), true;
+      }
+
+      case "/api/strategies/limit": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ side?: string; token?: string; amount?: number; targetPrice?: number }>(req);
+        if (!body.side || !body.token || !body.amount || !body.targetPrice) {
+          return err(res, 400, "side, token, amount, and targetPrice required"), true;
+        }
+        const id = createPendingOrder(sessionId, body.side, body.token.toUpperCase(), body.amount, body.targetPrice);
+        return ok(res, { id, message: `Limit ${body.side} order created: ${body.amount} ${body.token} @ $${body.targetPrice}` }), true;
+      }
+
+      case "/api/strategies/alert": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ token?: string; condition?: string; threshold?: number; actionType?: string; actionValue?: string }>(req);
+        if (!body.token || !body.condition || body.threshold == null || !body.actionType) {
+          return err(res, 400, "token, condition, threshold, and actionType required"), true;
+        }
+        const id = createAlert(sessionId, body.token.toUpperCase(), body.condition, body.threshold, body.actionType, body.actionValue ? { value: body.actionValue } : undefined);
+        return ok(res, { id, message: `Alert created: ${body.token} ${body.condition} ${body.threshold}` }), true;
+      }
+
+      case "/api/strategies/protection": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ threshold?: number }>(req);
+        if (body.threshold == null) {
+          return err(res, 400, "threshold required"), true;
+        }
+        const id = createProtection(sessionId, body.threshold, 0);
+        return ok(res, { id, message: `Stop-loss protection at -${body.threshold}%` }), true;
+      }
+
+      case "/api/strategies/rebalance": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ allocations?: Record<string, number>; driftThreshold?: number }>(req);
+        if (!body.allocations || Object.keys(body.allocations).length === 0) {
+          return err(res, 400, "allocations required (e.g. {\"ALEO\": 60, \"USDC\": 40})"), true;
+        }
+        const id = createRebalanceStrategy(sessionId, body.allocations, body.driftThreshold ?? 5);
+        return ok(res, { id, message: `Rebalance strategy created` }), true;
+      }
+
+      case "/api/strategies/copy": {
+        if (req.method !== "POST") return err(res, 405, "POST only"), true;
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const body = await readBody<{ leader?: string; mode?: string; fixedAmount?: number; maxPerTrade?: number }>(req);
+        if (!body.leader) {
+          return err(res, 400, "leader required"), true;
+        }
+        const id = createCopyStrategy(sessionId, body.leader, body.mode ?? "proportional", body.fixedAmount, body.maxPerTrade);
+        return ok(res, { id, message: `Now copying trader ${body.leader}` }), true;
+      }
+
       case "/api/gemini/config": {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) return err(res, 503, "Gemini API key not configured"), true;
@@ -395,6 +475,68 @@ export async function handleApiRequest(
           apiKey,
           voiceModel: "gemini-2.5-flash-native-audio-preview-12-2025",
           textModel: "gemini-2.0-flash",
+        }), true;
+      }
+
+      case "/api/privacy/summary": {
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const trades = getTradeHistory(sessionId);
+        const dca = getUserDcaStrategies(sessionId);
+        const limits = getUserPendingOrders(sessionId);
+        const alerts = getUserAlerts(sessionId);
+        const protection = getUserProtections(sessionId);
+        const rebalance = getUserRebalances(sessionId);
+        const copy = getUserCopyStrategies(sessionId);
+        const walletInfo = getSessionWalletInfo(sessionId);
+        const user = getUser(sessionId);
+
+        const zkTradesCount = trades.filter((t) => t.tx_hash).length;
+        const totalTrades = trades.length;
+        const privateSends = trades.filter((t) => t.action === "transfer_private").length;
+        const godarks = trades.filter((t) => t.action === "transfer_public_to_private").length;
+        const zkLoginActive = sessionId.startsWith("oauth_google_");
+        const shieldWallet = Boolean(walletInfo?.active);
+        const activeStrategies =
+          dca.length + limits.length + alerts.length +
+          protection.length + rebalance.length + copy.length;
+
+        let privacyScore = 20; // base: using Aleo
+        if (zkLoginActive) privacyScore += 20;
+        if (shieldWallet || user?.aleo_address) privacyScore += 20;
+        if (zkTradesCount > 0) privacyScore += 20;
+        if (godarks > 0) privacyScore += 10;
+        if (activeStrategies > 0) privacyScore += 10;
+        if (privacyScore > 100) privacyScore = 100;
+
+        return ok(res, {
+          privacyScore,
+          breakdown: {
+            zkTradesCount,
+            totalTrades,
+            privateSends,
+            godarks,
+            zkLoginActive,
+            shieldWallet,
+            activeStrategies,
+          },
+          contracts: [
+            { name: "ghost_trade_v3.aleo", status: "deployed", functions: 9 },
+            { name: "ghost_launchpad_v2.aleo", status: "deployed", functions: 5 },
+            { name: "ghost_zklogin_v2.aleo", status: "deployed", functions: 3 },
+          ],
+          proofCapabilities: [
+            { name: "Minimum Balance Proof", fn: "prove_minimum_balance", program: "ghost_trade_v3.aleo", description: "Prove you hold ≥ X tokens without revealing actual balance" },
+            { name: "Private Swap", fn: "swap", program: "ghost_trade_v3.aleo", description: "Trade tokens with ZK-proven safety constraints" },
+            { name: "Private Transfer", fn: "transfer_private", program: "ghost_trade_v3.aleo", description: "Send tokens privately" },
+            { name: "Buy with USDCx", fn: "buy_with_usdcx", program: "ghost_trade_v3.aleo", description: "Cross-program stablecoin purchase with ZK proof" },
+            { name: "Token Launch", fn: "create_launch", program: "ghost_launchpad_v2.aleo", description: "Create bonding curve token launch" },
+            { name: "Bonding Curve Buy", fn: "buy_token", program: "ghost_launchpad_v2.aleo", description: "Buy tokens on private bonding curve with slippage protection" },
+            { name: "Creator Fee Claim", fn: "claim_creator_fees", program: "ghost_launchpad_v2.aleo", description: "Claim accumulated creator fees with on-chain access control" },
+            { name: "zkLogin Register", fn: "register_zklogin", program: "ghost_zklogin_v2.aleo", description: "Link OAuth identity via BHP256 commitment proof" },
+            { name: "Identity Verification", fn: "verify_identity", program: "ghost_zklogin_v2.aleo", description: "Verify OAuth identity ownership with preimage proof" },
+            { name: "zkLogin Unregister", fn: "unregister_zklogin", program: "ghost_zklogin_v2.aleo", description: "Remove identity link with ownership proof" },
+          ],
         }), true;
       }
 
@@ -494,6 +636,11 @@ export async function handleApiRequest(
             description?: string;
             launch_id?: string;
             txId?: string;
+            image_url?: string;
+            website_url?: string;
+            twitter_url?: string;
+            telegram_url?: string;
+            discord_url?: string;
           }>(req);
           if (!body.name || !body.ticker) {
             return err(res, 400, "name and ticker required"), true;
@@ -503,9 +650,15 @@ export async function handleApiRequest(
             body.name,
             body.ticker,
             body.description ?? "",
-            body.launch_id || body.txId
-              ? { launchId: body.launch_id, txId: body.txId }
-              : undefined,
+            {
+              launchId: body.launch_id,
+              txId: body.txId,
+              image_url: body.image_url,
+              website_url: body.website_url,
+              twitter_url: body.twitter_url,
+              telegram_url: body.telegram_url,
+              discord_url: body.discord_url,
+            },
           );
           return ok(res, result), true;
         }

@@ -9,12 +9,32 @@ import {
   clearAuthSession,
 } from "./auth";
 
+export interface LiveMarketToken {
+  symbol: string;
+  name: string;
+  price: number;
+  confidence: number | null;
+  priceSource: string;
+  change24h: number;
+  change1h: number;
+  rsi: number | null;
+  rsiSignal: "oversold" | "neutral" | "overbought" | null;
+  bollingerPosition:
+    | "below_lower"
+    | "lower_half"
+    | "upper_half"
+    | "above_upper"
+    | null;
+  isStablecoin: boolean;
+}
+
 export type WsMessage =
   | { type: "wallet"; address: string; sessionId: string; auth?: boolean }
   | { type: "response"; message: string }
   | { type: "confirm"; message: string; key: string }
   | { type: "error"; message: string }
-  | { type: "voice_response"; message: string; confirmKey?: string };
+  | { type: "voice_response"; message: string; confirmKey?: string }
+  | { type: "price_update"; data: LiveMarketToken[] };
 
 export interface ChatMessage {
   id: string;
@@ -32,6 +52,7 @@ interface WsContextValue {
   sessionId: string | null;
   authSession: AuthSession | null;
   messages: ChatMessage[];
+  liveMarket: LiveMarketToken[];
   send: (text: string) => void;
   confirm: (key: string) => void;
   cancel: (key: string) => void;
@@ -46,13 +67,17 @@ const WsContext = React.createContext<WsContextValue | null>(null);
 function getWsUrl(): string {
   if (typeof window === "undefined") return "";
   // In dev (Next dev server on 3002), point at backend on 3000.
-  // In prod (backend serves the export), use same host.
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const host =
-    window.location.port === "3002"
-      ? `${window.location.hostname}:3000`
-      : window.location.host;
-  return `${proto}//${host}`;
+  // In prod (Vercel), point at Railway backend.
+  if (window.location.port === "3002") {
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${window.location.hostname}:3000`;
+  }
+  if (window.location.port === "3000") {
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${window.location.host}`;
+  }
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://noir-backend-production-d2b0.up.railway.app";
+  return backendUrl.replace("https://", "wss://").replace("http://", "ws://");
 }
 
 export function WsProvider({ children }: { children: React.ReactNode }) {
@@ -61,6 +86,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [authSession, setAuthSession] = React.useState<AuthSession | null>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [liveMarket, setLiveMarket] = React.useState<LiveMarketToken[]>([]);
   const wsRef = React.useRef<WebSocket | null>(null);
   const voiceCallbackRef = React.useRef<VoiceResponseCallback | null>(null);
 
@@ -161,6 +187,11 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
+          if (data.type === "price_update") {
+            setLiveMarket(data.data);
+            return;
+          }
+
           if (data.type === "error") {
             setMessages((m) => [
               ...m,
@@ -251,6 +282,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
       sessionId,
       authSession,
       messages,
+      liveMarket,
       send,
       confirm,
       cancel,
@@ -265,6 +297,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
       sessionId,
       authSession,
       messages,
+      liveMarket,
       send,
       confirm,
       cancel,

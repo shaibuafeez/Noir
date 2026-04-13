@@ -454,11 +454,22 @@ export async function callClaude(
 
 // ── Gemini text chat (function calling via REST API) ──
 
+function stripUnsupportedFields(obj: any): any {
+  if (typeof obj !== "object" || obj === null) return obj;
+  if (Array.isArray(obj)) return obj.map(stripUnsupportedFields);
+  const result: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === "additionalProperties") continue;
+    result[key] = stripUnsupportedFields(value);
+  }
+  return result;
+}
+
 function buildGeminiTools(): object[] {
   return TOOLS.map((t) => ({
     name: t.name,
     description: t.description,
-    parameters: t.input_schema,
+    parameters: stripUnsupportedFields(t.input_schema),
   }));
 }
 
@@ -470,7 +481,7 @@ export async function callGemini(
   if (!apiKey) return null;
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const body = {
       system_instruction: {

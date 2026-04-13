@@ -24,7 +24,7 @@ import {
   type LaunchTradeRow,
 } from "../storage/db.js";
 
-const PROGRAM_ID = "ghost_launchpad_v1.aleo";
+const PROGRAM_ID = "ghost_launchpad_v2.aleo";
 const MAX_SUPPLY = 1_000_000;
 const GRADUATION_THRESHOLD = 800_000;
 
@@ -120,7 +120,15 @@ export async function createLaunch(
   name: string,
   ticker: string,
   description: string,
-  opts?: { launchId?: string; txId?: string },
+  opts?: {
+    launchId?: string;
+    txId?: string;
+    image_url?: string;
+    website_url?: string;
+    twitter_url?: string;
+    telegram_url?: string;
+    discord_url?: string;
+  },
 ): Promise<CreateLaunchResult> {
   // Validate
   const normalTicker = ticker.toUpperCase();
@@ -138,7 +146,13 @@ export async function createLaunch(
   const txHash = opts?.txId;
 
   // Insert metadata into local DB
-  insertLaunch(launchId, sessionId, name, normalTicker, description);
+  insertLaunch(launchId, sessionId, name, normalTicker, description, {
+    image_url: opts?.image_url,
+    website_url: opts?.website_url,
+    twitter_url: opts?.twitter_url,
+    telegram_url: opts?.telegram_url,
+    discord_url: opts?.discord_url,
+  });
 
   return {
     launchId,

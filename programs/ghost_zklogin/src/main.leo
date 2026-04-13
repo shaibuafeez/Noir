@@ -1,4 +1,4 @@
-program ghost_zklogin_v1.aleo {
+program ghost_zklogin_v2.aleo {
 
     @noupgrade
     constructor() {}
@@ -14,48 +14,82 @@ program ghost_zklogin_v1.aleo {
 
     // ── Mappings ──
 
-    // Maps a commitment (hash of iss+sub) to the owning Aleo address.
+    // Maps a commitment (hash of salt+iss+sub) to the owning Aleo address.
     // Allows on-chain verification that an OAuth identity is linked to an address.
     mapping commitments: field => address;
 
     // ── Functions ──
 
     // Register a zkLogin commitment on-chain.
-    // The commitment is a hash of (salt, issuer, subject) computed off-chain.
-    // This creates a private credential record and writes the mapping.
+    // The commitment is verified by recomputing the hash from preimage components:
+    //   commitment = BHP256::hash_to_field(salt || iss_hash || sub_hash)
+    // This proves the caller knows the underlying OAuth identity without revealing it.
     fn register_zklogin(
-        commitment: field,
+        salt: field,
+        iss_hash: field,
+        sub_hash: field,
         timestamp: u64,
     ) -> (ZkLoginCredential, Final) {
+        // Recompute the commitment from preimage to prove ownership
+        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
-            commitment,
+            commitment: computed,
             issued_at: timestamp,
         };
         let caller: address = self.caller;
+        let commitment: field = computed;
         return (credential, final {
-            // Write the commitment → address mapping.
-            // If already registered, this will overwrite (allows key rotation).
+            // Write the commitment -> address mapping.
+            // If already registered by the same owner, this allows key rotation.
+            // New registrations for an existing commitment are allowed (key rotation).
             commitments.set(commitment, caller);
         });
     }
 
-    // Verify that a commitment is registered and produce a fresh credential.
-    // This reads the on-chain mapping to confirm the link exists.
+    // Verify that a commitment is registered to the caller and produce a fresh credential.
+    // Caller must provide the preimage components to prove they know the identity.
     fn verify_identity(
-        commitment: field,
+        salt: field,
+        iss_hash: field,
+        sub_hash: field,
         timestamp: u64,
     ) -> (ZkLoginCredential, Final) {
+        // Recompute commitment from preimage
+        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
-            commitment,
+            commitment: computed,
             issued_at: timestamp,
         };
         let caller: address = self.caller;
+        let commitment: field = computed;
         return (credential, final {
             // Read the mapping and assert it matches the caller.
             let registered: address = commitments.get(commitment);
             assert_eq(registered, caller);
         });
+    }
+
+    // Unregister a commitment. Only the registered owner can remove the link.
+    // Caller must provide preimage components to prove knowledge of the identity.
+    fn unregister_zklogin(
+        salt: field,
+        iss_hash: field,
+        sub_hash: field,
+    ) -> Final {
+        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+        let caller: address = self.caller;
+        let commitment: field = computed;
+        return final {
+            // Only the registered address can unregister
+            let registered: address = commitments.get(commitment);
+            assert_eq(registered, caller);
+
+            // Remove the commitment -> address link
+            commitments.remove(commitment);
+        };
     }
 }

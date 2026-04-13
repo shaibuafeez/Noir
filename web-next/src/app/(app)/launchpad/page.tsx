@@ -16,6 +16,11 @@ import {
   Crown,
   Filter,
   Search,
+  Globe,
+  ImagePlus,
+  ChevronDown,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,13 +33,12 @@ import {
   StaggerItem,
   AnimatedNumber,
   PageWrapper,
-  GlassCard,
   Shimmer,
   PulseGlow,
   motion,
   AnimatePresence,
 } from "@/components/motion";
-import { cn, formatNumber, timeAgo } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { api, useApi } from "@/lib/api";
 import type { LaunchItem, LaunchDetailResponse } from "@/lib/api";
 import { useWs } from "@/lib/ws-context";
@@ -42,9 +46,34 @@ import { useWallet } from "@/lib/wallet-provider";
 
 const MAX_SUPPLY = 1_000_000;
 const GRADUATION_THRESHOLD = 800_000;
-const GRADUATING_SOON_PCT = 60; // Show urgency above 60%
+const GRADUATING_SOON_PCT = 60;
 
-const PROGRAM_ID = "ghost_launchpad_v1.aleo";
+const PROGRAM_ID = "ghost_launchpad_v2.aleo";
+
+// Social icons
+function TwitterIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function TelegramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+    </svg>
+  );
+}
+
+function DiscordIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z" />
+    </svg>
+  );
+}
 
 type FilterTab = "all" | "new" | "graduating" | "graduated";
 
@@ -70,7 +99,6 @@ export default function LaunchpadPage() {
   const filteredItems = React.useMemo(() => {
     let list = items;
 
-    // Search
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
@@ -80,10 +108,8 @@ export default function LaunchpadPage() {
       );
     }
 
-    // Filter tabs
     switch (filter) {
       case "new": {
-        // Created in last 24h
         const cutoff = Date.now() - 24 * 60 * 60 * 1000;
         list = list.filter(
           (l) =>
@@ -144,94 +170,103 @@ export default function LaunchpadPage() {
 
   return (
     <PageWrapper className="space-y-5">
-      {/* Header */}
+      {/* Hero Header & Tools */}
       <FadeIn>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2.5">
-              <span className="gradient-text">Launchpad</span>
-              <PulseGlow color="primary" size={6} />
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Private bonding curve tokens on Aleo
-            </p>
+        <div className="flex flex-col gap-5 rounded-2xl border-2 border-primary/15 bg-card p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                <span className="gradient-text">Launchpad</span>
+                <PulseGlow color="primary" size={8} />
+              </h1>
+              <p className="mt-1 text-sm text-foreground/60 font-medium">
+                Private zero-knowledge bonding curves on Aleo
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowCreate(true)}
+              size="default"
+              className="gap-2 shadow-[0_8px_30px_-4px_hsl(var(--primary)/0.3)] rounded-full px-6 font-semibold"
+            >
+              <Plus className="h-4 w-4" />
+              Deploy Token
+            </Button>
           </div>
-          <Button
-            onClick={() => setShowCreate(true)}
-            size="sm"
-            className="gap-1.5 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
-          >
-            <Plus className="h-4 w-4" />
-            Create
-          </Button>
-        </div>
-      </FadeIn>
 
-      {/* KPI Strip — compact horizontal row */}
-      <FadeIn delay={0.05}>
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
-          <KpiChip icon={<Rocket className="h-3.5 w-3.5" />} label="Launches" value={stats?.totalLaunches} color="primary" />
-          <KpiChip icon={<Activity className="h-3.5 w-3.5" />} label="Active" value={stats?.activeLaunches} color="primary" />
-          <KpiChip icon={<Trophy className="h-3.5 w-3.5" />} label="Graduated" value={stats?.graduatedCount} color="warning" />
-          <KpiChip icon={<TrendingUp className="h-3.5 w-3.5" />} label="Volume" value={stats?.totalVolume} format={(n) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : Math.round(n).toString()} color="success" />
-        </div>
-      </FadeIn>
+          <div className="h-px w-full bg-border/40" />
 
-      {/* Filter bar + search */}
-      <FadeIn delay={0.1}>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex rounded-lg border border-border/60 bg-card/60 p-0.5 backdrop-blur-sm">
-            {filterTabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setFilter(t.key)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all",
-                  filter === t.key
-                    ? "bg-primary/15 text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="relative flex-1 min-w-[160px] max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ticker or name..."
-              className="h-8 pl-8 text-xs bg-card/60"
-            />
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+            <div className="flex items-center divide-x-2 divide-border/30 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 scrollbar-none">
+              <KpiStat icon={<Rocket className="h-4 w-4" />} label="Launches" value={stats?.totalLaunches} color="primary" />
+              <KpiStat icon={<Activity className="h-4 w-4" />} label="Active" value={stats?.activeLaunches} color="primary" />
+              <KpiStat icon={<Trophy className="h-4 w-4" />} label="Graduated" value={stats?.graduatedCount} color="warning" />
+              <KpiStat icon={<TrendingUp className="h-4 w-4" />} label="Volume" value={stats?.totalVolume} format={(n) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : Math.round(n).toString()} color="success" />
+            </div>
+
+            <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
+              <div className="flex rounded-lg border-2 border-border/40 bg-muted/20 p-1">
+                {filterTabs.map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setFilter(t.key)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-all",
+                      filter === t.key
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                    )}
+                  >
+                    {t.icon}
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="relative flex-1 min-w-[180px] max-w-[260px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search ticker..."
+                  className="h-9 pl-9 border-2 border-border/40 bg-card font-medium placeholder:text-muted-foreground/60 transition-colors focus-visible:border-primary/50"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </FadeIn>
 
       {/* Main layout: card grid + detail */}
       <div className="grid gap-4 lg:grid-cols-5">
-        {/* Token card grid — pump.fun style */}
         <div className="lg:col-span-3">
           {launches.loading ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {[1, 2, 3, 4].map((i) => (
-                <Shimmer key={i} height="180px" className="w-full rounded-xl" />
+                <Shimmer key={i} height="220px" className="w-full rounded-xl" />
               ))}
             </div>
           ) : filteredItems.length === 0 ? (
             <FadeIn>
-              <div className="dot-grid flex flex-col items-center justify-center rounded-xl border border-border/30 py-16 text-sm text-muted-foreground">
+              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-card/50 py-24 px-6 text-center shadow-sm">
                 {items.length === 0 ? (
                   <>
-                    <Rocket className="h-8 w-8 mb-3 text-muted-foreground/50" />
-                    <p>No launches yet</p>
-                    <p className="text-xs mt-1">Be the first to create one</p>
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-5 shadow-inner">
+                      <Rocket className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight text-foreground">No tokens launched yet</h3>
+                    <p className="max-w-xs mt-2 mb-8 text-sm text-muted-foreground leading-relaxed">
+                      Be the first to deploy a zero-knowledge token on Aleo.
+                    </p>
+                    <Button onClick={() => setShowCreate(true)} size="lg" className="rounded-full px-8 shadow-[0_8px_30px_-4px_hsl(var(--primary)/0.4)]">
+                      Create your first token
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <Filter className="h-6 w-6 mb-2 text-muted-foreground/50" />
-                    <p>No matches for this filter</p>
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 text-muted-foreground mb-5">
+                      <Filter className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight text-foreground">No matches found</h3>
+                    <p className="text-sm text-muted-foreground mt-2">Adjust your filters or search query.</p>
                   </>
                 )}
               </div>
@@ -251,24 +286,43 @@ export default function LaunchpadPage() {
           )}
         </div>
 
-        {/* Detail panel — sticky on desktop */}
+        {/* Detail panel */}
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-4">
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden border-2 border-border/40 shadow-xl bg-card/60 backdrop-blur-xl">
               {!detail.data ? (
-                <CardContent className="flex h-[400px] items-center justify-center text-center text-sm text-muted-foreground">
+                <CardContent className="flex flex-col items-center justify-center p-10 text-center h-[500px]">
                   {detail.loading ? (
-                    <div className="space-y-3">
-                      <Shimmer width="120px" height="24px" className="mx-auto" />
-                      <Shimmer width="80px" height="16px" className="mx-auto" />
-                      <Shimmer width="100%" height="140px" className="mt-4" />
+                    <div className="space-y-4 w-full">
+                      <Shimmer width="140px" height="28px" className="mx-auto rounded-md" />
+                      <Shimmer width="90px" height="16px" className="mx-auto rounded-md" />
+                      <Shimmer width="100%" height="160px" className="mt-8 rounded-xl" />
+                      <div className="flex gap-3 mt-5">
+                        <Shimmer width="50%" height="45px" className="rounded-lg" />
+                        <Shimmer width="50%" height="45px" className="rounded-lg" />
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/40">
-                        <Rocket className="h-5 w-5 text-muted-foreground/60" />
+                    <div className="w-full flex flex-col items-center">
+                      <div className="mb-10 w-full max-w-[240px] opacity-40 select-none space-y-5">
+                        <div className="flex flex-col items-center gap-3">
+                           <div className="h-12 w-12 rounded-xl border-2 border-dashed border-border/80" />
+                           <div className="h-3 w-20 bg-muted/80 rounded-full" />
+                           <div className="h-2 w-12 bg-muted/50 rounded-full" />
+                        </div>
+                        <div className="h-20 w-full border-b-2 border-dashed border-border/50" />
+                        <div className="flex gap-2">
+                           <div className="h-10 w-1/2 bg-muted/60 rounded-lg" />
+                           <div className="h-10 w-1/2 bg-muted/60 rounded-lg" />
+                        </div>
                       </div>
-                      <p>Select a token to trade</p>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-4 shadow-[0_0_30px_hsl(var(--primary)/0.15)] ring-1 ring-primary/20">
+                        <Activity className="h-6 w-6" />
+                      </div>
+                      <h3 className="font-semibold text-lg text-foreground">Select a token</h3>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-[220px] mx-auto">
+                        Click on any token to view its bonding curve and trade.
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -307,9 +361,9 @@ export default function LaunchpadPage() {
   );
 }
 
-// ── KPI Chip (compact horizontal stat) ──
+// ── KPI Chip ──
 
-function KpiChip({
+function KpiStat({
   icon,
   label,
   value,
@@ -323,31 +377,119 @@ function KpiChip({
   color: "primary" | "success" | "warning";
 }) {
   const colorMap = {
-    primary: "text-primary bg-primary/8",
-    success: "text-[hsl(var(--success))] bg-[hsl(var(--success))]/8",
-    warning: "text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/8",
+    primary: "text-primary",
+    success: "text-[hsl(var(--success))]",
+    warning: "text-[hsl(var(--warning))]",
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-2 backdrop-blur-sm shrink-0">
-      <div className={cn("flex h-6 w-6 items-center justify-center rounded-md", colorMap[color])}>
+    <div className="flex items-center gap-3 px-5 shrink-0 first:pl-0">
+      <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-muted/40", colorMap[color])}>
         {icon}
       </div>
       <div>
-        <div className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground leading-none">
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-semibold leading-none">
           {label}
         </div>
-        <div className="text-sm font-semibold tabular-nums mt-0.5">
+        <div className="text-xl font-bold tabular-nums mt-0.5 text-foreground leading-none">
           {value !== undefined ? (
             <AnimatedNumber
               value={value}
               format={format ?? ((n) => Math.round(n).toString())}
             />
           ) : (
-            <Shimmer width="28px" height="16px" />
+            <Shimmer width="32px" height="20px" />
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Token avatar ──
+
+function TokenAvatar({
+  launch,
+  size = "md",
+  className,
+}: {
+  launch: { image_url?: string; ticker: string };
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}) {
+  const sizeMap = {
+    sm: "h-10 w-10 text-[11px] rounded-lg",
+    md: "h-12 w-12 text-sm rounded-xl",
+    lg: "h-16 w-16 text-lg rounded-2xl",
+  };
+
+  if (launch.image_url) {
+    return (
+      <img
+        src={launch.image_url}
+        alt={launch.ticker}
+        className={cn(sizeMap[size], "shrink-0 object-cover", className)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        sizeMap[size],
+        "flex shrink-0 items-center justify-center font-mono font-bold uppercase bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20",
+        className,
+      )}
+    >
+      {launch.ticker.slice(0, 3)}
+    </div>
+  );
+}
+
+// ── Social link row ──
+
+function SocialLinks({
+  website,
+  twitter,
+  telegram,
+  discord,
+  compact = false,
+}: {
+  website?: string;
+  twitter?: string;
+  telegram?: string;
+  discord?: string;
+  compact?: boolean;
+}) {
+  const links = [
+    { url: website, icon: Globe, label: "Website" },
+    { url: twitter, icon: TwitterIcon, label: "Twitter" },
+    { url: telegram, icon: TelegramIcon, label: "Telegram" },
+    { url: discord, icon: DiscordIcon, label: "Discord" },
+  ].filter((l) => l.url);
+
+  if (links.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {links.map((l) => {
+        const Icon = l.icon;
+        return (
+          <a
+            key={l.label}
+            href={l.url!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              "flex items-center justify-center rounded-md border border-border/40 transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary",
+              compact ? "h-6 w-6" : "h-7 w-7",
+            )}
+            title={l.label}
+          >
+            <Icon className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+          </a>
+        );
+      })}
     </div>
   );
 }
@@ -366,66 +508,73 @@ function LaunchCard({
   const progressPct = launch.progressPct;
   const isGraduated = launch.graduated === 1;
   const isGraduatingSoon = !isGraduated && progressPct >= GRADUATING_SOON_PCT;
+  const hasSocials = launch.website_url || launch.twitter_url || launch.telegram_url || launch.discord_url;
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        "group relative w-full rounded-xl border p-4 text-left transition-all duration-200",
-        "hover:border-primary/40 hover:bg-card/80",
+        "group relative w-full rounded-2xl border-2 p-4 text-left transition-all duration-300",
+        "hover:shadow-xl hover:-translate-y-1 hover:border-primary/40",
         selected
-          ? "launch-card-active border-primary/40 ring-1 ring-primary/10"
-          : "border-border/40 bg-card/40",
+          ? "border-primary/50 bg-primary/[0.04] shadow-[0_8px_30px_-4px_hsl(var(--primary)/0.15)]"
+          : "border-primary/15 bg-card shadow-sm",
         isGraduatingSoon && !selected && "graduating-soon",
       )}
     >
-      {/* Top row: avatar + ticker + age */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          {/* Token avatar */}
-          <div
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-mono text-[11px] font-bold uppercase transition-all",
-              selected
-                ? "bg-primary/20 text-primary ring-1 ring-primary/30"
-                : isGraduatingSoon
-                  ? "bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))] ring-1 ring-[hsl(var(--warning))]/20"
-                  : "bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+      {/* Top row: avatar + info + age */}
+      <div className="flex items-start gap-3">
+        <TokenAvatar
+          launch={launch}
+          size="sm"
+          className={cn(
+            selected
+              ? "ring-primary/30"
+              : isGraduatingSoon
+                ? "ring-[hsl(var(--warning))]/30"
+                : "ring-border/40 group-hover:ring-primary/30",
+          )}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold truncate">${launch.ticker}</span>
+            {isGraduated && (
+              <Badge variant="warning" className="text-[8px] px-1 py-0 leading-tight">
+                <Crown className="h-2.5 w-2.5 mr-0.5" />
+                GRAD
+              </Badge>
             )}
-          >
-            {launch.ticker.slice(0, 3)}
+            {isGraduatingSoon && (
+              <Badge variant="destructive" className="text-[8px] px-1 py-0 leading-tight animate-pulse">
+                <Flame className="h-2.5 w-2.5 mr-0.5" />
+                HOT
+              </Badge>
+            )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold truncate">${launch.ticker}</span>
-              {isGraduated && (
-                <Badge variant="warning" className="text-[8px] px-1 py-0 leading-tight">
-                  <Crown className="h-2.5 w-2.5 mr-0.5" />
-                  GRAD
-                </Badge>
-              )}
-              {isGraduatingSoon && (
-                <Badge variant="destructive" className="text-[8px] px-1 py-0 leading-tight animate-pulse">
-                  <Flame className="h-2.5 w-2.5 mr-0.5" />
-                  HOT
-                </Badge>
-              )}
-            </div>
-            <div className="text-[11px] text-muted-foreground truncate">
-              {launch.name}
-            </div>
-          </div>
+          <div className="text-[11px] text-muted-foreground truncate">{launch.name}</div>
+          {launch.description && (
+            <div className="text-[10px] text-muted-foreground/70 truncate mt-0.5">{launch.description}</div>
+          )}
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
-          <Clock className="h-2.5 w-2.5" />
-          {timeAgo(launch.created_at)}
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Clock className="h-2.5 w-2.5" />
+            {timeAgo(launch.created_at)}
+          </div>
+          {hasSocials && (
+            <div className="flex items-center gap-0.5">
+              {launch.website_url && <Globe className="h-2.5 w-2.5 text-muted-foreground/50" />}
+              {launch.twitter_url && <TwitterIcon className="h-2.5 w-2.5 text-muted-foreground/50" />}
+              {launch.telegram_url && <TelegramIcon className="h-2.5 w-2.5 text-muted-foreground/50" />}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Price + market cap */}
       <div className="mt-3 flex items-end justify-between">
         <div>
-          <div className="font-mono text-lg font-semibold tabular-nums leading-none">
+          <div className="font-mono text-lg font-bold tabular-nums leading-none">
             {launch.currentPrice.toFixed(2)}
           </div>
           <div className="text-[10px] text-muted-foreground mt-0.5">per token</div>
@@ -434,8 +583,8 @@ function LaunchCard({
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
             MCap
           </div>
-          <div className="font-mono text-xs font-medium tabular-nums">
-            {(launch.supply_sold * launch.currentPrice).toLocaleString()}
+          <div className="font-mono text-xs font-semibold tabular-nums">
+            {formatMarketCap(launch.supply_sold * launch.currentPrice)}
           </div>
         </div>
       </div>
@@ -454,7 +603,6 @@ function LaunchCard({
             )}
             style={{ width: `${Math.min(progressPct, 100)}%` }}
           />
-          {/* Graduation threshold marker */}
           <div
             className="absolute top-0 h-full w-px bg-foreground/20"
             style={{ left: `${(GRADUATION_THRESHOLD / MAX_SUPPLY) * 100}%` }}
@@ -462,17 +610,19 @@ function LaunchCard({
         </div>
         <div className="mt-1 flex justify-between text-[10px] font-mono text-muted-foreground">
           <span>{launch.supply_sold.toLocaleString()} sold</span>
-          <span
-            className={cn(
-              isGraduatingSoon && "text-[hsl(var(--warning))] font-medium",
-            )}
-          >
+          <span className={cn(isGraduatingSoon && "text-[hsl(var(--warning))] font-medium")}>
             {progressPct.toFixed(1)}%
           </span>
         </div>
       </div>
     </button>
   );
+}
+
+function formatMarketCap(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return Math.round(n).toLocaleString();
 }
 
 // ── Detail panel ──
@@ -495,12 +645,21 @@ function LaunchDetail({
   const [trading, setTrading] = React.useState(false);
   const [tradeMsg, setTradeMsg] = React.useState<string | null>(null);
   const [payWithUsdcx, setPayWithUsdcx] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   const isGraduated = detail.graduated === 1;
   const progressPct = (detail.supply_sold / MAX_SUPPLY) * 100;
   const isGraduatingSoon = !isGraduated && progressPct >= GRADUATING_SOON_PCT;
+  const marketCap = detail.supply_sold * detail.currentPrice;
+  const hasSocials = detail.website_url || detail.twitter_url || detail.telegram_url || detail.discord_url;
 
   const presets = [100, 1_000, 10_000, 100_000];
+
+  const copyLaunchId = () => {
+    navigator.clipboard.writeText(detail.launch_id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleTrade = async () => {
     if (!amount) return;
@@ -511,10 +670,9 @@ function LaunchDetail({
     try {
       if (wallet.connected && wallet.executeTransaction) {
         if (side === "buy" && payWithUsdcx) {
-          // USDCx payment path: transfer USDCx to treasury, then buy
           const midpoint = detail.supply_sold + Math.floor(num / 2);
           const cost = num * (1 + Math.floor(midpoint / 1000));
-          const usdcxAmount = BigInt(cost) * 1_000_000n; // 6 decimals
+          const usdcxAmount = BigInt(cost) * 1_000_000n;
           const treasuryAddress = wallet.address ?? "";
           const result = await wallet.executeTransaction({
             program: "test_usdcx_stablecoin.aleo",
@@ -581,49 +739,58 @@ function LaunchDetail({
 
   return (
     <>
-      {/* Header with token info */}
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-xl font-mono text-sm font-bold uppercase",
-                isGraduatingSoon
-                  ? "bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))] ring-1 ring-[hsl(var(--warning))]/30"
-                  : "bg-primary/15 text-primary ring-1 ring-primary/20",
+      {/* Token header with image */}
+      <CardHeader className="pb-2">
+        <div className="flex items-start gap-3">
+          <TokenAvatar launch={detail} size="lg" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="text-xl font-bold">${detail.ticker}</CardTitle>
+              {isGraduated ? (
+                <Badge variant="warning" className="text-[9px]">
+                  <Crown className="h-3 w-3 mr-0.5" />
+                  Graduated
+                </Badge>
+              ) : isGraduatingSoon ? (
+                <Badge variant="destructive" className="text-[9px] animate-pulse">
+                  <Flame className="h-3 w-3 mr-0.5" />
+                  {progressPct.toFixed(0)}%
+                </Badge>
+              ) : (
+                <Badge variant="default" className="text-[9px]">
+                  {progressPct.toFixed(1)}%
+                </Badge>
               )}
-            >
-              {detail.ticker.slice(0, 3)}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-lg">${detail.ticker}</CardTitle>
-                {isGraduated ? (
-                  <Badge variant="warning" className="text-[9px]">
-                    <Crown className="h-3 w-3 mr-0.5" />
-                    Graduated
-                  </Badge>
-                ) : isGraduatingSoon ? (
-                  <Badge variant="destructive" className="text-[9px] animate-pulse">
-                    <Flame className="h-3 w-3 mr-0.5" />
-                    {progressPct.toFixed(0)}%
-                  </Badge>
-                ) : (
-                  <Badge variant="default" className="text-[9px]">
-                    {progressPct.toFixed(1)}%
-                  </Badge>
-                )}
+            <p className="text-xs text-muted-foreground mt-0.5">{detail.name}</p>
+
+            {hasSocials && (
+              <div className="mt-2">
+                <SocialLinks
+                  website={detail.website_url}
+                  twitter={detail.twitter_url}
+                  telegram={detail.telegram_url}
+                  discord={detail.discord_url}
+                />
               </div>
-              <p className="text-xs text-muted-foreground">{detail.name}</p>
-            </div>
+            )}
           </div>
         </div>
 
         {detail.description && (
-          <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-2">
+          <p className="mt-3 text-xs text-muted-foreground leading-relaxed line-clamp-3">
             {detail.description}
           </p>
         )}
+
+        {/* Launch ID (copyable) */}
+        <button
+          onClick={copyLaunchId}
+          className="mt-2 flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+        >
+          <span className="truncate max-w-[180px]">ID: {detail.launch_id}</span>
+          {copied ? <Check className="h-2.5 w-2.5 text-[hsl(var(--success))]" /> : <Copy className="h-2.5 w-2.5" />}
+        </button>
 
         {/* Price display */}
         <div className="mt-3 flex items-baseline gap-2">
@@ -683,18 +850,14 @@ function LaunchDetail({
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-2">
-          <StatBox label="Market Cap" value={detail.marketCap.toLocaleString()} />
+          <StatBox label="Market Cap" value={formatMarketCap(marketCap)} />
           <StatBox label="Supply" value={detail.supply_sold.toLocaleString()} />
-          <StatBox
-            label="Remaining"
-            value={(MAX_SUPPLY - detail.supply_sold).toLocaleString()}
-          />
+          <StatBox label="Remaining" value={(MAX_SUPPLY - detail.supply_sold).toLocaleString()} />
         </div>
 
         {/* Buy/Sell form */}
         {!isGraduated && (
           <div className="rounded-lg border border-border/40 bg-card/60 p-3 space-y-3">
-            {/* Buy/Sell toggle */}
             <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted/30 p-0.5">
               <button
                 onClick={() => setSide("buy")}
@@ -722,7 +885,6 @@ function LaunchDetail({
               </button>
             </div>
 
-            {/* USDCx payment toggle */}
             {side === "buy" && wallet.connected && (
               <button
                 onClick={() => setPayWithUsdcx((v) => !v)}
@@ -737,7 +899,6 @@ function LaunchDetail({
               </button>
             )}
 
-            {/* Quick-amount presets */}
             <div className="flex gap-1.5">
               {presets.map((p) => (
                 <button
@@ -755,7 +916,6 @@ function LaunchDetail({
               ))}
             </div>
 
-            {/* Amount input */}
             <Input
               type="number"
               placeholder="Custom amount"
@@ -764,7 +924,6 @@ function LaunchDetail({
               className="font-mono text-sm h-9"
             />
 
-            {/* Cost estimate */}
             {amount && parseInt(amount, 10) > 0 && (
               <div className="flex justify-between text-[11px] text-muted-foreground px-1">
                 <span>Est. {side === "buy" ? "cost" : "refund"}</span>
@@ -783,7 +942,6 @@ function LaunchDetail({
               </div>
             )}
 
-            {/* Execute button */}
             <Button
               onClick={handleTrade}
               disabled={trading || !amount || parseInt(amount, 10) <= 0 || (!sessionId && !wallet.connected)}
@@ -905,7 +1063,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-// ── Create launch modal ──
+// ── Create launch modal (pump.fun style) ──
 
 function CreateLaunchModal({
   sessionId,
@@ -921,8 +1079,30 @@ function CreateLaunchModal({
   const [name, setName] = React.useState("");
   const [ticker, setTicker] = React.useState("");
   const [description, setDescription] = React.useState("");
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+  const [websiteUrl, setWebsiteUrl] = React.useState("");
+  const [twitterUrl, setTwitterUrl] = React.useState("");
+  const [telegramUrl, setTelegramUrl] = React.useState("");
+  const [discordUrl, setDiscordUrl] = React.useState("");
+  const [showMore, setShowMore] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Image must be under 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -957,7 +1137,15 @@ function CreateLaunchModal({
           name.trim(),
           ticker.trim().toUpperCase(),
           description.trim(),
-          { launch_id: launchId, txId },
+          {
+            launch_id: launchId,
+            txId,
+            image_url: imagePreview ?? undefined,
+            website_url: websiteUrl.trim() || undefined,
+            twitter_url: twitterUrl.trim() || undefined,
+            telegram_url: telegramUrl.trim() || undefined,
+            discord_url: discordUrl.trim() || undefined,
+          },
         );
       }
 
@@ -974,7 +1162,7 @@ function CreateLaunchModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -982,7 +1170,7 @@ function CreateLaunchModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-md rounded-xl border border-border/60 bg-card p-6 shadow-2xl shadow-primary/5"
+        className="relative w-full max-w-lg rounded-xl border border-border/60 bg-card p-6 shadow-2xl shadow-primary/5 my-8"
       >
         <button
           onClick={onClose}
@@ -998,47 +1186,196 @@ function CreateLaunchModal({
           <div>
             <h2 className="text-base font-semibold">Launch a Token</h2>
             <p className="text-[11px] text-muted-foreground">
-              Deploy a bonding curve on Aleo
+              Deploy a bonding curve on Aleo — immutable after creation
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Image upload */}
           <div>
             <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Token Name
+              Token Image
             </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ghost Dog"
-              className="mt-1"
-              required
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              onChange={handleImage}
+              className="hidden"
             />
+            <div className="mt-1.5 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className={cn(
+                  "relative flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed transition-all overflow-hidden",
+                  imagePreview
+                    ? "border-primary/40"
+                    : "border-border/60 hover:border-primary/30 hover:bg-primary/5",
+                )}
+              >
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                ) : (
+                  <ImagePlus className="h-6 w-6 text-muted-foreground/60" />
+                )}
+              </button>
+              <div className="text-[10px] text-muted-foreground space-y-0.5">
+                <p>PNG, JPG, GIF, WebP</p>
+                <p>Max 2MB, square recommended</p>
+                {imagePreview && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null);
+                      if (fileRef.current) fileRef.current.value = "";
+                    }}
+                    className="text-destructive hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Ticker (max 6 chars)
-            </label>
-            <Input
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase().slice(0, 6))}
-              placeholder="GDOG"
-              className="mt-1 font-mono uppercase"
-              maxLength={6}
-              required
-            />
+
+          {/* Name + Ticker row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                Token Name
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ghost Dog"
+                className="mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                Ticker (max 6)
+              </label>
+              <Input
+                value={ticker}
+                onChange={(e) => setTicker(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="GDOG"
+                className="mt-1 font-mono uppercase"
+                maxLength={6}
+                required
+              />
+            </div>
           </div>
+
+          {/* Description */}
           <div>
             <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
               Description
             </label>
-            <Input
+            <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="The spookiest meme token on Aleo"
-              className="mt-1"
+              placeholder="The spookiest meme token on Aleo..."
+              rows={2}
+              className="mt-1 flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
+          </div>
+
+          {/* Show more options toggle */}
+          <button
+            type="button"
+            onClick={() => setShowMore(!showMore)}
+            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+          >
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showMore && "rotate-180")} />
+            {showMore ? "Hide" : "Show"} social links
+          </button>
+
+          {/* Social links (collapsible) */}
+          <AnimatePresence>
+            {showMore && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden space-y-3"
+              >
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                    <Globe className="h-3 w-3" /> Website
+                  </label>
+                  <Input
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://mytoken.xyz"
+                    className="mt-1"
+                    type="url"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                      <TwitterIcon className="h-2.5 w-2.5" /> Twitter
+                    </label>
+                    <Input
+                      value={twitterUrl}
+                      onChange={(e) => setTwitterUrl(e.target.value)}
+                      placeholder="https://x.com/..."
+                      className="mt-1 text-xs"
+                      type="url"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                      <TelegramIcon className="h-2.5 w-2.5" /> Telegram
+                    </label>
+                    <Input
+                      value={telegramUrl}
+                      onChange={(e) => setTelegramUrl(e.target.value)}
+                      placeholder="https://t.me/..."
+                      className="mt-1 text-xs"
+                      type="url"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                      <DiscordIcon className="h-2.5 w-2.5" /> Discord
+                    </label>
+                    <Input
+                      value={discordUrl}
+                      onChange={(e) => setDiscordUrl(e.target.value)}
+                      placeholder="https://discord.gg/..."
+                      className="mt-1 text-xs"
+                      type="url"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Info banner */}
+          <div className="rounded-lg border border-border/30 bg-muted/10 p-3 text-[10px] text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground/80">Token parameters (fixed):</p>
+            <div className="flex justify-between">
+              <span>Max supply</span>
+              <span className="font-mono">1,000,000</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Graduation</span>
+              <span className="font-mono">800,000 tokens sold</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Starting price</span>
+              <span className="font-mono">1 microcredit</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Curve</span>
+              <span className="font-mono">price = 1 + supply/1000</span>
+            </div>
           </div>
 
           {error && (
@@ -1054,11 +1391,12 @@ function CreateLaunchModal({
           <Button
             type="submit"
             disabled={creating || !name.trim() || !ticker.trim() || (!sessionId && !wallet.connected)}
-            className="w-full shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
+            className="w-full shadow-[0_0_20px_hsl(var(--primary)/0.15)] font-semibold"
+            size="lg"
           >
             {creating ? (
               <span className="flex items-center gap-2">
-                <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Deploying...
               </span>
             ) : wallet.connected ? (

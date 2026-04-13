@@ -7,13 +7,14 @@
 import * as React from "react";
 
 // In dev (Next dev on :3002) we point at the backend on :3000.
-// In prod the backend serves us, so same-origin works.
+// In prod (Vercel) we point at the Railway backend.
 function apiBase(): string {
   if (typeof window === "undefined") return "";
   if (window.location.port === "3002") {
     return `${window.location.protocol}//${window.location.hostname}:3000`;
   }
-  return "";
+  if (window.location.port === "3000") return "";
+  return process.env.NEXT_PUBLIC_API_URL || "https://noir-backend-production-d2b0.up.railway.app";
 }
 
 type ApiResponse<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -159,6 +160,38 @@ export interface MarketToken {
   isStablecoin: boolean;
 }
 
+// ── Privacy types ──────────────────────────────────────────────────────
+
+export interface PrivacyBreakdown {
+  zkTradesCount: number;
+  totalTrades: number;
+  privateSends: number;
+  godarks: number;
+  zkLoginActive: boolean;
+  shieldWallet: boolean;
+  activeStrategies: number;
+}
+
+export interface PrivacyContract {
+  name: string;
+  status: string;
+  functions: number;
+}
+
+export interface ProofCapability {
+  name: string;
+  fn: string;
+  program: string;
+  description: string;
+}
+
+export interface PrivacySummary {
+  privacyScore: number;
+  breakdown: PrivacyBreakdown;
+  contracts: PrivacyContract[];
+  proofCapabilities: ProofCapability[];
+}
+
 // ── Launchpad types ────────────────────────────────────────────────────
 
 export interface LaunchItem {
@@ -168,6 +201,10 @@ export interface LaunchItem {
   ticker: string;
   description: string;
   image_url: string;
+  website_url: string;
+  twitter_url: string;
+  telegram_url: string;
+  discord_url: string;
   supply_sold: number;
   graduated: number;
   created_at: string;
@@ -204,6 +241,11 @@ export interface LaunchDetailResponse {
   name: string;
   ticker: string;
   description: string;
+  image_url: string;
+  website_url: string;
+  twitter_url: string;
+  telegram_url: string;
+  discord_url: string;
   supply_sold: number;
   graduated: number;
   created_at: string;
@@ -260,7 +302,15 @@ export const api = {
     name: string,
     ticker: string,
     description: string,
-    opts?: { launch_id?: string; txId?: string },
+    opts?: {
+      launch_id?: string;
+      txId?: string;
+      image_url?: string;
+      website_url?: string;
+      twitter_url?: string;
+      telegram_url?: string;
+      discord_url?: string;
+    },
   ) =>
     post<{ launchId: string; message: string }>(
       `/api/launches?sessionId=${encodeURIComponent(sessionId)}`,
@@ -270,6 +320,43 @@ export const api = {
     post<{ success: boolean; message: string }>(
       `/api/launches/${encodeURIComponent(launchId)}/trade?sessionId=${encodeURIComponent(sessionId)}`,
       { side, amount },
+    ),
+
+  // ── Strategy creation ─────────────────────────────────────────────────
+  createDca: (sessionId: string, token: string, amount: number, interval: string) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/dca?sessionId=${encodeURIComponent(sessionId)}`,
+      { token, amount, interval },
+    ),
+  createLimit: (sessionId: string, side: string, token: string, amount: number, targetPrice: number) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/limit?sessionId=${encodeURIComponent(sessionId)}`,
+      { side, token, amount, targetPrice },
+    ),
+  createAlert: (sessionId: string, token: string, condition: string, threshold: number, actionType: string, actionValue?: string) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/alert?sessionId=${encodeURIComponent(sessionId)}`,
+      { token, condition, threshold, actionType, actionValue },
+    ),
+  createProtection: (sessionId: string, threshold: number) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/protection?sessionId=${encodeURIComponent(sessionId)}`,
+      { threshold },
+    ),
+  createRebalance: (sessionId: string, allocations: Record<string, number>, driftThreshold?: number) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/rebalance?sessionId=${encodeURIComponent(sessionId)}`,
+      { allocations, driftThreshold },
+    ),
+  createCopy: (sessionId: string, leader: string, mode?: string, fixedAmount?: number, maxPerTrade?: number) =>
+    post<{ id: number; message: string }>(
+      `/api/strategies/copy?sessionId=${encodeURIComponent(sessionId)}`,
+      { leader, mode, fixedAmount, maxPerTrade },
+    ),
+
+  privacySummary: (sessionId: string) =>
+    get<PrivacySummary>(
+      `/api/privacy/summary?sessionId=${encodeURIComponent(sessionId)}`,
     ),
 
   // ── Session wallet ────────────────────────────────────────────────────

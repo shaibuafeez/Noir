@@ -24,9 +24,11 @@ import { useVoiceSession } from "@/lib/use-voice-session";
 
 const SUGGESTIONS = [
   { icon: Sparkles, label: "Portfolio", prompt: "show my portfolio" },
-  { icon: Zap, label: "DCA setup", prompt: "dca 10 usdc into aleo every day" },
-  { icon: Terminal, label: "Buy ALEO", prompt: "buy 100 aleo" },
-  { icon: Sparkles, label: "Status", prompt: "status" },
+  { icon: Zap, label: "DCA setup", prompt: "dca $25 into ALEO every day" },
+  { icon: Terminal, label: "Limit order", prompt: "buy 500 ALEO if price drops to $0.45" },
+  { icon: Sparkles, label: "Go Dark", prompt: "go dark" },
+  { icon: Sparkles, label: "Alert", prompt: "alert me when ALEO goes above $1.00" },
+  { icon: Sparkles, label: "Copy trader", prompt: "copy trader whale_0x" },
 ];
 
 export default function ChatPage() {
@@ -239,7 +241,7 @@ function EmptyState({
           {walletAddress.slice(0, 10)}…{walletAddress.slice(-6)}
         </div>
       )}
-      <div className="mt-8 grid w-full grid-cols-2 gap-2">
+      <div className="mt-8 grid w-full grid-cols-2 md:grid-cols-3 gap-2">
         {SUGGESTIONS.map((s, i) => (
           <motion.button
             key={s.label}

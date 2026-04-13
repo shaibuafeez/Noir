@@ -23,8 +23,10 @@ export function AleoWalletWrapper({ children }: { children: React.ReactNode }) {
       autoConnect
       decryptPermission={"DECRYPT_UPON_REQUEST" as any}
       programs={[
-        "ghost_launchpad_v1.aleo",
-        "ghost_trade_v2.aleo",
+        "credits.aleo",
+        "ghost_launchpad_v2.aleo",
+        "ghost_trade_v3.aleo",
+        "test_usdcx_stablecoin.aleo",
       ]}
     >
       <WalletModalProvider>

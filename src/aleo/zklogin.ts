@@ -21,7 +21,7 @@ export function deriveOAuthSessionId(provider: string, sub: string): string {
  * Uses SHA-256 with an optional salt for domain separation.
  */
 export function computeCommitment(iss: string, sub: string): string {
-  const salt = process.env.GOOGLE_ZKLOGIN_SALT ?? "ghost_zklogin_v1";
+  const salt = process.env.GOOGLE_ZKLOGIN_SALT ?? "ghost_zklogin_v2";
   const hash = createHash("sha256")
     .update(`${salt}:${iss}:${sub}`)
     .digest("hex");

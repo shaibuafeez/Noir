@@ -5,6 +5,7 @@ import { parseIntent, type AgentContext } from "../agent/parser.js";
 import { handleIntent, executeConfirmedTrade } from "../agent/actions.js";
 import { mapToolToIntent } from "../agent/ai.js";
 import { handleApiRequest } from "./web-api.js";
+import { fetchMarketSnapshot, type MarketSnapshot } from "./market-ws.js";
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -123,10 +124,38 @@ export function startWebServer(port = 3000): void {
 
   const wss = new WebSocketServer({ server });
 
+  // ── Real-time price broadcast every 5 seconds ──
+  let lastSnapshot: MarketSnapshot[] = [];
+  const PRICE_INTERVAL_MS = 5_000;
+
+  async function broadcastPrices(): Promise<void> {
+    try {
+      lastSnapshot = await fetchMarketSnapshot();
+      const msg = JSON.stringify({ type: "price_update", data: lastSnapshot });
+      for (const client of wss.clients) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(msg);
+        }
+      }
+    } catch (e) {
+      console.error("[price-ws] broadcast error:", e);
+    }
+  }
+
+  // Start broadcast loop
+  setInterval(() => void broadcastPrices(), PRICE_INTERVAL_MS);
+  // Fire first snapshot immediately
+  void broadcastPrices();
+
   wss.on("connection", (ws) => {
     // Each WS connection uses a session ID as the "user"
     let currentSessionId = `web_${Date.now().toString(36)}`;
     console.log(`[web] Client connected: ${currentSessionId}`);
+
+    // Send latest snapshot immediately so new clients don't wait 5s
+    if (lastSnapshot.length > 0) {
+      send(ws, { type: "price_update", data: lastSnapshot });
+    }
 
     ws.on("message", async (raw) => {
       try {
@@ -271,6 +300,8 @@ async function handleOAuthRequest(
   res: ServerResponse,
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+  // Base URL for OAuth redirects — use BACKEND_URL env var in production (Railway)
+  const backendBase = process.env.BACKEND_URL || `${url.protocol}//${url.host}`;
 
   // GET /auth/google → redirect to Google consent
   if (url.pathname === "/auth/google" && req.method === "GET") {
@@ -283,7 +314,7 @@ async function handleOAuthRequest(
     const state = randomBytes(16).toString("hex");
     oauthStates.set(state, Date.now());
 
-    const redirectUri = `${url.protocol}//${url.host}/auth/google/callback`;
+    const redirectUri = `${backendBase}/auth/google/callback`;
     const authUrl = getGoogleAuthUrl(redirectUri, state);
 
     res.writeHead(302, { Location: authUrl });
@@ -304,7 +335,7 @@ async function handleOAuthRequest(
     oauthStates.delete(state);
 
     try {
-      const redirectUri = `${url.protocol}//${url.host}/auth/google/callback`;
+      const redirectUri = `${backendBase}/auth/google/callback`;
       const { idToken } = await exchangeCodeForTokens(code, redirectUri);
       const claims = await verifyGoogleJwt(idToken);
       const { address, sessionId } = getOrCreateOAuthWallet(
@@ -324,7 +355,9 @@ async function handleOAuthRequest(
         }),
       ).toString("base64url");
 
-      res.writeHead(302, { Location: `/dashboard/?auth=${payload}` });
+      // Redirect to the frontend (Vercel) with auth payload
+      const frontendUrl = process.env.FRONTEND_URL || backendBase;
+      res.writeHead(302, { Location: `${frontendUrl}/dashboard/?auth=${payload}` });
       res.end();
     } catch (err) {
       console.error("[oauth] callback error:", err);

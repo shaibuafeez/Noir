@@ -1,7 +1,16 @@
 {
-  "program": "ghost_trade_v2.aleo",
+  "program": "ghost_trade_v3.aleo",
   "version": "0.1.0",
   "description": "Private trading records for Ghost agent",
   "license": "MIT",
-  "leo": "4.0.0"
+  "leo": "4.0.1",
+  "dependencies": [
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "network",
+      "path": null,
+      "edition": null
+    }
+  ],
+  "dev_dependencies": null
 }

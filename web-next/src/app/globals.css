@@ -17,14 +17,14 @@
     --primary: 340 40% 37%; /* #853953 */
     --primary-foreground: 180 5% 95%; /* #F3F4F4 */
 
-    --secondary: 316 15% 90%; /* Very pale plum */
-    --secondary-foreground: 316 37% 28%; /* #612D53 */
+    --secondary: 340 15% 91%; /* Very pale wine */
+    --secondary-foreground: 340 40% 30%;
 
     --muted: 180 5% 90%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 316 15% 90%;
-    --accent-foreground: 316 37% 28%;
+    --accent: 340 15% 91%;
+    --accent-foreground: 340 40% 30%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 180 5% 95%;
@@ -44,7 +44,7 @@
       ui-monospace, monospace;
 
     /* Premium gradient stops */
-    --gradient-primary: linear-gradient(135deg, hsl(340 40% 37%), hsl(316 37% 28%));
+    --gradient-primary: linear-gradient(135deg, hsl(340 40% 37%), hsl(340 45% 28%));
     --gradient-success: linear-gradient(135deg, hsl(160 60% 45%), hsl(142 71% 45%));
     --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(180 5% 95%) 100%);
   }
@@ -209,7 +209,7 @@
 
 /* ─── Gradient text ─── */
 .gradient-text {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(260 100% 72%));
+  background: linear-gradient(135deg, hsl(340 45% 32%), hsl(340 55% 48%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

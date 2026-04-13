@@ -1,9 +1,14 @@
 import test_usdcx_stablecoin.aleo;
 
-program ghost_trade_v2.aleo {
+program ghost_trade_v3.aleo {
 
     @noupgrade
     constructor() {}
+
+    // ── Constants ──
+
+    const MAX_TRADE_AMOUNT: u64 = 10000u64;
+    const BASIS_POINTS: u64 = 10000u64;
 
     // ── Records ──
 
@@ -33,19 +38,56 @@ program ghost_trade_v2.aleo {
         is_sufficient: bool,
     }
 
+    // ── Mappings ──
+
+    // Authorized minters — only addresses registered here can create holdings.
+    mapping authorized_minters: address => bool;
+
+    // Admin address for minter management (set on first call).
+    mapping admin: u8 => address;
+
     // ── Transitions ──
 
+    // Initialize the admin (deployer). Can only be called once.
+    fn init_admin() -> Final {
+        let caller: address = self.caller;
+        return final {
+            let has_admin: bool = admin.contains(0u8);
+            assert(!has_admin);
+            admin.set(0u8, caller);
+            authorized_minters.set(caller, true);
+        };
+    }
+
+    // Admin can authorize additional minters.
+    fn authorize_minter(minter: address) -> Final {
+        let caller: address = self.caller;
+        return final {
+            let current_admin: address = admin.get(0u8);
+            assert_eq(current_admin, caller);
+            authorized_minters.set(minter, true);
+        };
+    }
+
     // Seed an initial balance for a token.
-    fn create_holding(token: field, amount: u64) -> Holding {
-        return Holding {
+    // Restricted to authorized minters only.
+    fn create_holding(token: field, amount: u64) -> (Holding, Final) {
+        assert(amount > 0u64);
+
+        let holding: Holding = Holding {
             owner: self.caller,
             token,
             amount,
         };
+        let caller: address = self.caller;
+        return (holding, final {
+            let is_authorized: bool = authorized_minters.get_or_use(caller, false);
+            assert(is_authorized);
+        });
     }
 
     // Swap: consume a holding, produce remainder + new token holding + receipt.
-    // price is in basis points (amount_out = amount * price / 10000).
+    // price is in basis points (amount_out = amount * price / BASIS_POINTS).
     fn swap(
         holding: Holding,
         token_out: field,
@@ -54,12 +96,15 @@ program ghost_trade_v2.aleo {
         timestamp: u64,
     ) -> (Holding, Holding, Receipt) {
         // Safety: max trade size
-        assert(amount <= 10000u64);
+        assert(amount <= MAX_TRADE_AMOUNT);
         // Safety: can't spend more than you have
         assert(amount <= holding.amount);
 
         let remaining: u64 = holding.amount - amount;
-        let amount_out: u64 = amount * price / 10000u64;
+        let amount_out: u64 = amount * price / BASIS_POINTS;
+
+        // Safety: must receive at least 1 token (prevents zero-output from rounding)
+        assert(amount_out > 0u64);
 
         let leftover: Holding = Holding {
             owner: self.caller,
@@ -119,10 +164,14 @@ program ghost_trade_v2.aleo {
         // Both must be the same token
         assert_eq(a.token, b.token);
 
+        // Overflow guard: sum must not wrap
+        let merged: u64 = a.amount + b.amount;
+        assert(merged >= a.amount);
+
         return Holding {
             owner: self.caller,
             token: a.token,
-            amount: a.amount + b.amount,
+            amount: merged,
         };
     }
 
@@ -165,18 +214,22 @@ program ghost_trade_v2.aleo {
         amount: u64,
         usdcx_cost: u128,
         seller: address,
-    ) -> Holding {
+    ) -> (Holding, Final) {
         // Safety: max trade size
-        assert(amount <= 10000u64);
+        assert(amount <= MAX_TRADE_AMOUNT);
         assert(usdcx_cost > 0u128);
 
         // Transfer USDCx to seller via the official stablecoin program
-        test_usdcx_stablecoin.aleo/transfer_public(seller, usdcx_cost);
+        let transfer: Final = test_usdcx_stablecoin.aleo::transfer_public(seller, usdcx_cost);
 
-        return Holding {
+        let holding: Holding = Holding {
             owner: self.caller,
             token,
             amount,
         };
+
+        return (holding, final {
+            transfer.run();
+        });
     }
 }

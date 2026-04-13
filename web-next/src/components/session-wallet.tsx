@@ -88,7 +88,7 @@ export function SessionWalletBanner() {
         program: "credits.aleo",
         function: "transfer_public",
         inputs: [addr, `${fundAmount}u64`],
-        fee: 100_000,
+        fee: 0.5,
       });
 
       setFundedAmount(fundAmount);

@@ -9,6 +9,8 @@ import {
   History,
   Zap,
   Rocket,
+  BookOpen,
+  Fingerprint,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -19,6 +21,8 @@ const NAV = [
   { href: "/launchpad", label: "Launch", icon: Rocket },
   { href: "/market", label: "Market", icon: BarChart3 },
   { href: "/history", label: "History", icon: History },
+  { href: "/privacy", label: "Privacy", icon: Fingerprint },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ] as const;
 
 export function MobileNav() {
