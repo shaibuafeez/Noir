@@ -6,6 +6,9 @@ import {
   TrendingUp,
   Trophy,
   Activity,
+  Layers,
+  Signal,
+  GraduationCap,
   Flame,
   Plus,
   X,
@@ -197,9 +200,9 @@ export default function LaunchpadPage() {
 
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
             <div className="flex items-center divide-x-2 divide-border/30 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 scrollbar-none">
-              <KpiStat icon={<Rocket className="h-4 w-4" />} label="Launches" value={stats?.totalLaunches} color="primary" />
-              <KpiStat icon={<Activity className="h-4 w-4" />} label="Active" value={stats?.activeLaunches} color="primary" />
-              <KpiStat icon={<Trophy className="h-4 w-4" />} label="Graduated" value={stats?.graduatedCount} color="warning" />
+              <KpiStat icon={<Layers className="h-4 w-4" />} label="Launches" value={stats?.totalLaunches} color="primary" />
+              <KpiStat icon={<Signal className="h-4 w-4" />} label="Active" value={stats?.activeLaunches} color="primary" />
+              <KpiStat icon={<GraduationCap className="h-4 w-4" />} label="Graduated" value={stats?.graduatedCount} color="warning" />
               <KpiStat icon={<TrendingUp className="h-4 w-4" />} label="Volume" value={stats?.totalVolume} format={(n) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : Math.round(n).toString()} color="success" />
             </div>
 
