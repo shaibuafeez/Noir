@@ -1,220 +1,325 @@
-<h1 align="center">Ghost</h1>
+<h1 align="center">Noir</h1>
 
 <p align="center">
-  <strong>Private AI Trading Agent on Aleo</strong><br/>
-  Your trades are invisible. Your strategies are secret. Your AI alpha stays yours.
+  <strong>The First Private AI Trading Agent — Built on Aleo</strong><br/>
+  Talk to an AI. It trades for you. Nobody sees a thing.
 </p>
 
 <p align="center">
-  <a href="https://app.akindo.io/wave-hacks/gXdXJvJXxTJKBELvo">Aleo x AKINDO Buildathon</a> &middot;
-  <a href="#demo">Demo</a> &middot;
-  <a href="#architecture">Architecture</a> &middot;
-  <a href="#smart-contracts">Smart Contracts</a> &middot;
+  <a href="https://noiraleo.xyz">Live App</a> &middot;
+  <a href="https://app.akindo.io/wave-hacks/gXdXJvJXxTJKBELvo">AKINDO Buildathon</a> &middot;
+  <a href="#live-on-testnet">Live on Testnet</a> &middot;
+  <a href="#zk-proof-usage">ZK Proof Usage</a> &middot;
   <a href="#quick-start">Quick Start</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Aleo-Testnet-6366f1?style=flat-square" alt="Aleo Testnet" />
-  <img src="https://img.shields.io/badge/Leo-v4.0-10b981?style=flat-square" alt="Leo v4" />
-  <img src="https://img.shields.io/badge/TypeScript-ESM-3178c6?style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Aleo-Testnet_(3_contracts_deployed)-6366f1?style=flat-square" alt="Aleo Testnet" />
+  <img src="https://img.shields.io/badge/Leo-v4.0_(13_transitions)-10b981?style=flat-square" alt="Leo v4" />
   <img src="https://img.shields.io/badge/Tests-136%20passing-22c55e?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/AI-Claude_%2B_Gemini_Voice-f59e0b?style=flat-square" alt="Dual AI" />
+  <a href="https://www.npmjs.com/package/@noir-protocol/sdk"><img src="https://img.shields.io/npm/v/@noir-protocol/sdk?style=flat-square&color=cb3837&label=SDK" alt="npm" /></a>
 </p>
 
 ---
 
-## The Problem
+## Why Noir Exists
 
-Every AI trading agent on every other chain **broadcasts its strategy to the world**. Your buy orders, sell triggers, DCA schedules, and portfolio allocations are fully visible on-chain. Front-runners extract value. Competitors copy your alpha. Your trading edge evaporates the moment you use it.
+On Ethereum, Solana, and every other transparent chain, your AI trading bot **broadcasts everything** to the world:
 
-## The Solution
+- Your buy order? **Front-runners see it first.**
+- Your DCA schedule? **Competitors copy it.**
+- Your limit order price? **MEV bots sandwich you.**
+- Your portfolio? **Anyone can derive your strategy.**
 
-Ghost is an AI-powered trading agent where **everything is private by default**. Built natively on Aleo, every trade, balance, and strategy is protected by zero-knowledge proofs. The AI reasons locally, acts privately, and proves correctness — without revealing a single detail.
+> $1.38B was extracted by MEV bots on Ethereum in 2024 alone.
 
-```
-You:    "Buy 100 ALEO"
-Ghost:  "BUY 100 ALEO @ $0.62 — $62.00 total.
-         This will execute a private swap on testnet.
-         Confirm?"
-You:    [Confirm]
-Ghost:  "Done. Private Holding record created.
-         Tx: at1x7k9..."
-```
-
-No one sees what you bought. No one sees how much. No one can front-run you.
+**Noir makes all of that invisible.** Every trade, every balance, every strategy is protected by zero-knowledge proofs on Aleo. The AI reasons about your portfolio — but the blockchain only ever sees encrypted records and ZK proofs. No one can front-run what they can't see.
 
 ---
 
-## Demo
+## Live on Testnet
 
-> Video demo link and live bot coming soon.
+All 3 smart contracts are deployed and live on Aleo Testnet:
 
-**Testnet Deployment:**
-- `ghost_trade_v2.aleo` — [Deployed on Aleo Testnet](https://explorer.provable.com/transaction/at1gpn6dpkud0r4k4jgdr8ylqm6tscg8llndjq748ha0kc3f5nz6g8qdf2vt5)
-- `ghost_launchpad_v1.aleo` — Built, ready for deployment
-- `ghost_zklogin_v1.aleo` — Built, ready for deployment
+| Contract | Transitions | Status | Explorer |
+|----------|-------------|--------|----------|
+| `ghost_trade_v2.aleo` | 7 | **Deployed** | [View on Provable](https://explorer.provable.com/transaction/at1gpn6dpkud0r4k4jgdr8ylqm6tscg8llndjq748ha0kc3f5nz6g8qdf2vt5) |
+| `ghost_launchpad_v1.aleo` | 4 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_launchpad_v1.aleo) |
+| `ghost_zklogin_v1.aleo` | 2 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_zklogin_v1.aleo) |
+
+**13 total transitions** across 3 Leo programs — all producing private Aleo records.
+
+---
+
+## 30-Second Demo
+
+```
+You:    "Buy 100 ALEO"
+Noir:   "BUY 100 ALEO @ $0.62 — $62.00 total.
+         Private swap on testnet. Confirm?"
+You:    [Confirm]
+Noir:   "Done. Private Holding record created. Tx: at1x7k9..."
+```
+
+Or just talk:
+
+```
+You:    🎤 "Hey Noir, buy fifty ALEO and set a stop-loss at fifteen percent"
+Noir:   🔊 "Done. Bought 50 ALEO privately and set a 15% trailing stop-loss.
+             Both are invisible on-chain."
+```
+
+**No one sees what you bought. No one sees how much. No one can front-run you.**
+
+---
+
+## ZK Proof Usage
+
+> This section maps directly to the AKINDO **"Privacy Usage"** scoring criterion.
+
+Noir doesn't just run *on* Aleo — it uses zero-knowledge proofs as a core mechanic across the entire product. Here's every ZK interaction:
+
+### 1. Private Trading (ghost_trade_v2.aleo)
+
+Every trade creates **private Aleo records** — encrypted data that only the owner's view key can decrypt.
+
+| Transition | ZK Proof Guarantees |
+|-----------|-------------------|
+| `swap` | Proves trade amount ≤ holding, amount ≤ 10K limit — without revealing either value |
+| `transfer_private` | Proves sender owns the record — without revealing amount, sender, or recipient |
+| `prove_minimum_balance` | Proves balance ≥ threshold — **without revealing the actual balance** |
+| `create_holding` | Proves valid token/amount pair — mints encrypted private record |
+| `buy_with_usdcx` | Proves sufficient USDCx balance — cross-token private purchase |
+| `merge_holdings` | Proves ownership of two records — consolidates without revealing amounts |
+| `burn_holding` | Proves ownership — destroys record privately |
+
+**Circuit-level safety** — the AI cannot bypass these constraints. The ZK proof literally fails to generate:
+
+```leo
+assert(amount <= 10000u64);       // Max trade size — enforced by the circuit
+assert(amount <= holding.amount); // Can't overspend — enforced by the circuit
+```
+
+### 2. Private Launchpad (ghost_launchpad_v1.aleo)
+
+Meme coin bonding curve where **your position is private**:
+
+| Transition | ZK Proof Guarantees |
+|-----------|-------------------|
+| `buy_token` | Proves payment ≤ credits owned, enforces `max_price` slippage — private `LaunchHolding` created |
+| `sell_token` | Proves ownership of `LaunchHolding` record — burns it, credits returned privately |
+| `create_launch` | Proves unique launch ID — initializes bonding curve with on-chain mappings |
+| `merge_holdings` | Proves ownership of two launch holdings — combines privately |
+
+The bonding curve math (`price = 1 + supply/1000`) runs on-chain in public mappings, but **who holds how much** is always private.
+
+### 3. zkLogin (ghost_zklogin_v1.aleo)
+
+Sign in with Google, get an Aleo wallet — linked by a ZK commitment, not your email:
+
+| Transition | ZK Proof Guarantees |
+|-----------|-------------------|
+| `register_zklogin` | Proves knowledge of OAuth `sub` claim → derives deterministic Aleo address, stores commitment on-chain |
+| `verify_identity` | Proves existing commitment matches — without revealing the OAuth identity |
+
+**The chain never sees your Google identity.** It only sees a cryptographic commitment that you can later prove you own.
+
+### 4. Privacy Dashboard (Frontend)
+
+The `/privacy` route gives users a **Privacy Score (0-100)** computed from their actual ZK activity:
+
+- How many trades have on-chain ZK proofs
+- Whether zkLogin is active (OAuth → ZK commitment)
+- Whether Shield Wallet is connected
+- Whether "Go Dark" (public→private transfer) has been used
+- Number of active automated strategies
+
+Users can also **generate ZK proofs directly** from the dashboard (e.g., prove minimum balance) via Shield Wallet.
+
+### 5. Go Dark Mode
+
+The most aggressive privacy feature. A single command — `"go dark"` — sweeps all public credits into private records via `transfer_public_to_private`. After going dark, your on-chain footprint is **zero**.
 
 ---
 
 ## Features
 
+### Dual-AI Agent: Text + Voice
+Noir runs two AI models in parallel:
+
+| Mode | Model | How It Works |
+|------|-------|-------------|
+| **Text** | Claude (Anthropic) | 21 tool definitions → intent parsing → private execution |
+| **Voice** | Gemini Live API | Real-time speech → function calls → spoken results |
+
+Talk or type — same 21 intents, same private execution. The voice agent uses Gemini's native audio for sub-second latency while relaying actions to the same backend.
+
 ### Private Trading Engine
-Every action produces a ZK-proven Aleo transaction. Amounts, tokens, and prices are all encrypted.
 
 | Action | What Happens On-Chain | Visible to Others |
 |--------|----------------------|-------------------|
-| Buy/Sell | Private `Holding` + `Receipt` records created | Nothing |
-| Limit Order | Stored locally, executed when price hits target | Nothing |
-| DCA | Recurring buys with randomized timing | Nothing |
-| Rebalance | Batch swaps to target allocation | Nothing |
-| Go Dark | All public credits moved to private records | Zero footprint |
-
-### AI Agent (Natural Language)
-Talk to Ghost like a human. It understands 21 different intents:
-
-```
-"buy 100 ALEO"                      → Private swap
-"stack ALEO $50/week"               → Automated DCA
-"if ALEO drops 15%, sell half"      → Smart alert with auto-trade
-"rebalance 60 ALEO 40 USDC"        → Portfolio rebalancing
-"go dark"                           → Move everything to private records
-"copy @trader"                      → Mirror trades privately (they never know)
-"launch MyCoin MOON 'To the moon'" → Create a meme coin on bonding curve
-"why"                               → Explain last AI decisions
-```
+| Buy/Sell | Private `Holding` + `Receipt` records | **Nothing** |
+| Limit Order | Stored locally, executed when price hits | **Nothing** |
+| DCA | Recurring buys with randomized timing jitter | **Nothing** |
+| Stop-Loss / Protection | Trailing drawdown monitor, auto-sells | **Nothing** |
+| Rebalance | Drift-threshold swaps to target allocation | **Nothing** |
+| Go Dark | Public credits → private records | **Zero footprint** |
+| Copy Trading | Mirror another trader's moves | **Leader never knows** |
 
 ### Meme Coin Launchpad
-Create and trade tokens on a bonding curve — entirely on-chain with ZK privacy:
-
-- **Bonding Curve**: Price = 1 + supply/1000 (increases with demand)
-- **Graduation**: At 800K of 1M tokens sold, the coin graduates
-- **Private Holdings**: Your position is a private `LaunchHolding` record
-- **Slippage Protection**: `max_price` parameter enforced by the Leo circuit
-
-### Multi-Interface
-Use Ghost from anywhere:
-
-| Interface | Status |
-|-----------|--------|
-| Web Dashboard | 9-page Next.js app with glassmorphism UI |
-| Telegram Bot | Full NL trading via grammY |
-| Discord Bot | Slash commands via discord.js |
-| CLI | Commander.js terminal interface |
-| MCP Server | Model Context Protocol for AI-to-AI integration |
-| Shield Wallet | Browser wallet for direct on-chain signing |
-
-### Session Wallets (Autonomous AI Trading)
-Shield Wallet users can fund a server-side session wallet, enabling the AI to trade autonomously without per-transaction popups:
-
-```
-Shield Wallet → Fund 1 ALEO → Session Wallet
-                                    ↓
-                          AI executes trades
-                          (DCA, alerts, copies)
-                                    ↓
-                    User clicks "Reclaim" → funds return
-```
+Create and trade tokens on a ZK-private bonding curve:
+- **Bonding Curve**: `price = 1 + supply/1000` (on-chain, verifiable)
+- **Graduation**: At 800K of 1M supply, the token graduates
+- **Private Positions**: Your holdings are encrypted Aleo records
+- **Slippage Protection**: `max_price` enforced at the circuit level
 
 ### Market Intelligence
-- Real-time prices from CoinGecko
+- **Pyth Network** oracle as primary price feed (on-chain, decentralized)
 - Technical indicators: RSI, Bollinger Bands, SMA
-- Price alerts with automated trade execution
-- Agent reasoning traces (ask "why?" after any decision)
+- Smart alerts with automated trade execution
+- AI reasoning traces — ask "why?" after any decision
+
+### 6 Interfaces, 1 Private Backend
+
+| Interface | Tech | Status |
+|-----------|------|--------|
+| Web Dashboard | Next.js 16, 10 routes, glassmorphism UI | **Live** |
+| Voice Agent | Gemini Live API, real-time audio | **Live** |
+| Telegram Bot | grammY, full NL trading | **Live** |
+| Discord Bot | discord.js, slash commands | **Live** |
+| CLI | Commander.js terminal | **Live** |
+| MCP Server | Model Context Protocol (AI-to-AI) | **Live** |
+
+### Session Wallets (Autonomous AI)
+Fund a server-side wallet from Shield Wallet. The AI trades autonomously — DCA, alerts, copies — without per-transaction popups. Reclaim funds anytime.
+
+```
+Shield Wallet → Fund 1 ALEO → Session Wallet (AI trades autonomously)
+                                     ↓
+                     User clicks "Reclaim" → funds return
+```
+
+### zkLogin (Google OAuth → Aleo Wallet)
+Sign in with Google. A ZK commitment links your OAuth identity to a deterministic Aleo address. **The chain never sees your email** — only a hash commitment.
+
+### Auth & Session Modes
+Four ways to connect — each with full feature access:
+
+| Method | How It Works | Privacy Level |
+|--------|-------------|---------------|
+| **zkLogin** | Google OAuth → ZK commitment → deterministic Aleo address | Chain sees only a hash |
+| **Shield Wallet** | Browser extension, direct on-chain signing | Full key ownership |
+| **Session Wallet** | Server-side key funded from Shield Wallet, AI trades autonomously | Delegated signing |
+| **Ephemeral Session** | Auto-generated web session, no login required | Anonymous |
+
+### 10-Page Web Dashboard
+
+| Route | What It Does |
+|-------|-------------|
+| `/dashboard` | Portfolio value, ALEO/USDCx balances, holdings, strategy overview, trade history |
+| `/chat` | AI text chat + voice agent (mic button), real-time WebSocket |
+| `/privacy` | Privacy Score (0-100), ZK breakdown, deployed contracts, proof generation |
+| `/launchpad` | Browse/create meme coin launches, bonding curve trades via Shield Wallet |
+| `/market` | Live prices (Pyth), RSI, Bollinger Bands, sparkline charts |
+| `/strategies` | Manage DCA, limit orders, alerts, stop-loss, rebalance, copy trading |
+| `/history` | Full trade log + AI decision reasoning traces |
+
+Every page uses glassmorphism cards, framer-motion animations, and skeleton loading states.
+
+### Developer SDK (`@noir-protocol/sdk`)
+
+Tree-shakeable TypeScript SDK — [published on npm](https://www.npmjs.com/package/@noir-protocol/sdk). 5 subpath exports:
+
+```ts
+import { NoirClient } from "@noir-protocol/sdk";
+
+const noir = new NoirClient({ network: "testnet" });
+
+// Private swap
+await noir.trade.swap("ALEO", "USDC", 100);
+
+// Prove minimum balance without revealing it
+await noir.trade.proveMinimumBalance("ALEO", 1000);
+
+// Launchpad: get bonding curve quote
+const quote = noir.launchpad.quoteBuy("launch_id", 500);
+console.log(quote.totalCost, quote.avgPrice);
+
+// zkLogin: compute commitment from Google OAuth
+const commitment = await noir.zklogin.computeCommitment(oauthSub);
+
+// Technical indicators
+const rsi = noir.indicators.rsi(priceHistory);
+```
+
+**Modules:**
+
+| Import | What |
+|--------|------|
+| `@noir-protocol/sdk` | Full client — `NoirClient` with lazy sub-clients |
+| `@noir-protocol/sdk/trade` | `TradeClient` — swaps, transfers, proofs, token registry |
+| `@noir-protocol/sdk/launchpad` | `LaunchpadClient` — bonding curve math, create/buy/sell |
+| `@noir-protocol/sdk/zklogin` | `ZkLoginClient` — commitment computation, registration |
+| `@noir-protocol/sdk/indicators` | RSI, Bollinger Bands, SMA — pure functions |
+| `@noir-protocol/sdk/network` | `ExplorerClient` — on-chain state reads |
+
+Optional peer dep: `@provablehq/sdk` (only needed for on-chain execution).
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  INTERFACES                                                  │
-│  Telegram · Discord · Web · CLI · MCP · Shield Wallet        │
-└─────────────────┬───────────────────────────────────────────┘
-                  │ natural language / commands
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│  AI AGENT                                                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  │
-│  │ Claude API   │  │ Intent       │  │ Action Handler    │  │
-│  │ (21 tools)   │→ │ Parser       │→ │ (trade, dca,      │  │
-│  │              │  │ + regex      │  │  alerts, launch)  │  │
-│  └──────────────┘  └──────────────┘  └─────────┬─────────┘  │
-└────────────────────────────────────────────────┼────────────┘
-                                                 │
-┌────────────────────────────────────────────────┼────────────┐
-│  ALEO LAYER                                    ▼             │
-│  ┌───────────────┐  ┌────────────┐  ┌────────────────────┐  │
-│  │ ghost_trade   │  │ ghost_     │  │ ghost_zklogin      │  │
-│  │ _v2.aleo      │  │ launchpad  │  │ _v1.aleo           │  │
-│  │               │  │ _v1.aleo   │  │                    │  │
-│  │ • swap        │  │ • buy/sell │  │ • register_zklogin │  │
-│  │ • transfer    │  │ • create   │  │ • verify_identity  │  │
-│  │ • prove_min   │  │ • graduate │  │                    │  │
-│  │ • merge/burn  │  │ • merge    │  │                    │  │
-│  └───────────────┘  └────────────┘  └────────────────────┘  │
-│                                                              │
-│  All transactions: encrypted inputs → ZK proof → on-chain    │
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  INTERFACES                                                          │
+│  Web · Voice · Telegram · Discord · CLI · MCP · Shield Wallet        │
+└─────────────────────┬───────────────────────────────────────────────┘
+                      │ natural language / voice / commands
+                      ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  DUAL AI AGENT                                                       │
+│  ┌────────────────┐  ┌────────────────┐  ┌───────────────────────┐  │
+│  │ Claude API     │  │ Gemini Live    │  │ Action Handler        │  │
+│  │ (text, 21      │  │ (voice, real-  │  │ (trade, dca, alerts,  │  │
+│  │  tool defs)    │  │  time audio)   │  │  launch, copy, dark)  │  │
+│  └───────┬────────┘  └───────┬────────┘  └──────────┬────────────┘  │
+│          └──────── Intent ───┘                       │               │
+│                    Parser                            │               │
+└──────────────────────────────────────────────────────┼──────────────┘
+                                                       │
+┌──────────────────────────────────────────────────────┼──────────────┐
+│  ALEO LAYER (Testnet — all deployed)                 ▼               │
+│  ┌─────────────────┐  ┌────────────────┐  ┌──────────────────────┐  │
+│  │ ghost_trade     │  │ ghost_         │  │ ghost_zklogin        │  │
+│  │ _v2.aleo        │  │ launchpad      │  │ _v1.aleo             │  │
+│  │                 │  │ _v1.aleo       │  │                      │  │
+│  │ 7 transitions:  │  │ 4 transitions: │  │ 2 transitions:       │  │
+│  │ swap, transfer, │  │ create, buy,   │  │ register_zklogin,    │  │
+│  │ prove_min_bal,  │  │ sell, merge    │  │ verify_identity      │  │
+│  │ create, merge,  │  │                │  │                      │  │
+│  │ burn, buy_usdcx │  │                │  │                      │  │
+│  └─────────────────┘  └────────────────┘  └──────────────────────┘  │
+│                                                                      │
+│  Encrypted inputs → ZK proof → on-chain private records              │
+│  Pyth Network oracle │ Shield Wallet signing │ Session wallets       │
+└──────────────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## Smart Contracts
-
-### `ghost_trade_v2.aleo` — Deployed on Testnet
-
-The core trading program. All state is private Aleo records.
-
-| Transition | Purpose |
-|-----------|---------|
-| `create_holding` | Mint a private token holding |
-| `swap` | Private token swap with safety rails (max 10K units) |
-| `transfer_private` | Send tokens without revealing amount or recipient |
-| `prove_minimum_balance` | ZK proof of balance >= threshold (without revealing actual balance) |
-| `merge_holdings` | Consolidate fragmented records |
-| `burn_holding` | Destroy tokens (dust cleanup) |
-
-**Key safety constraint** — enforced at the circuit level, not by the AI:
-```leo
-// The AI cannot bypass this. The ZK proof literally fails.
-assert(amount <= 10000u64);    // Max trade size
-assert(amount <= holding.amount); // Can't spend more than you have
-```
-
-### `ghost_launchpad_v1.aleo` — Built
-
-Bonding curve meme coin launchpad with on-chain state.
-
-| Transition | Purpose |
-|-----------|---------|
-| `create_launch` | Initialize a new token with bonding curve |
-| `buy_token` | Buy tokens, price increases along curve |
-| `sell_token` | Sell tokens back to the curve |
-| `merge_holdings` | Combine LaunchHolding records |
-
-Public mappings track supply (`supply_sold`), graduation status (`graduated`), and creator (`launch_creators`). Holdings are private records.
-
-### `ghost_zklogin_v1.aleo` — Built
-
-Links OAuth identities (Google) to Aleo addresses via on-chain commitment registry.
-
-| Transition | Purpose |
-|-----------|---------|
-| `register_zklogin` | Register OAuth commitment → address mapping |
-| `verify_identity` | Verify an existing commitment |
 
 ---
 
 ## Privacy Guarantees
 
-| What | Public Chains | Ghost on Aleo |
-|------|---------------|---------------|
-| Token balances | Visible to everyone | Encrypted in private records |
+| What | Public Chains (ETH, SOL) | Noir on Aleo |
+|------|--------------------------|---------------|
+| Token balances | Visible to everyone | Encrypted private records |
 | Trade amounts | Visible to front-runners | Hidden by ZK proof |
-| Limit order prices | Visible (front-runnable) | Private until executed |
+| Limit order prices | Visible → front-runnable | Private until executed |
 | DCA schedule | Correlatable on-chain | Randomized timing jitter |
 | Portfolio composition | Fully derivable | Encrypted, view-key only |
-| AI strategy logic | Often leaked via API calls | Local reasoning, never transmitted |
-| Copy trading activity | Leader sees followers | Leader never knows |
+| AI strategy logic | Often leaked via mempool | Local reasoning, never transmitted |
+| Copy trading activity | Leader sees followers | **Leader never knows** |
+| User identity | Wallet address = identity | **zkLogin: chain sees only a hash** |
 
 ---
 
@@ -222,16 +327,19 @@ Links OAuth identities (Google) to Aleo addresses via on-chain commitment regist
 
 | Layer | Technology |
 |-------|-----------|
-| Smart Contracts | Leo 4.0 (3 programs on Aleo) |
-| Backend | TypeScript (ESM), Node.js |
-| AI Agent | Anthropic Claude API (21 tool definitions) + regex fallback |
-| Frontend | Next.js 16, React 19, Tailwind CSS, framer-motion 12 |
+| Smart Contracts | Leo 4.0 — 3 programs, 13 transitions, deployed on Aleo Testnet |
+| Backend | TypeScript (ESM), Node.js, 28 modules |
+| AI — Text | Anthropic Claude API (21 tool definitions + regex fallback) |
+| AI — Voice | Google Gemini Live API (real-time native audio) |
+| Frontend | Next.js 16, React 19, Tailwind CSS, framer-motion 12, 10 routes |
 | Wallet | Shield Wallet (@provablehq/aleo-wallet-adaptor-shield) |
-| Database | SQLite (better-sqlite3) |
+| Auth | Google OAuth → zkLogin (ZK commitment on-chain) |
+| Price Oracle | Pyth Network (primary) + CoinGecko (fallback) |
+| Database | SQLite (better-sqlite3), 12 tables |
 | Blockchain SDK | @provablehq/sdk |
+| Developer SDK | @noir-protocol/sdk (tree-shakeable, 5 subpath exports) |
 | Chat | grammY (Telegram), discord.js (Discord), WebSocket (Web) |
-| Market Data | CoinGecko API |
-| Testing | Vitest (136 tests) |
+| Testing | Vitest — 136 tests, 12 suites, all passing |
 | Protocol | Model Context Protocol (MCP) for AI-to-AI interop |
 
 ---
@@ -239,7 +347,6 @@ Links OAuth identities (Google) to Aleo addresses via on-chain commitment regist
 ## Quick Start
 
 ### Prerequisites
-
 - Node.js 22+
 - pnpm
 - [Leo CLI](https://developer.aleo.org/getting_started/) (for smart contract development)
@@ -247,54 +354,38 @@ Links OAuth identities (Google) to Aleo addresses via on-chain commitment regist
 ### Install & Run
 
 ```bash
-# Clone
 git clone https://github.com/shaibuafeez/Noir.git
 cd Noir
-
-# Install dependencies
 pnpm install
 
-# Configure environment
 cp .env.example .env
-# Edit .env with your keys:
-#   TELEGRAM_BOT_TOKEN=...     (from @BotFather)
-#   ANTHROPIC_API_KEY=...      (optional, for AI agent)
-#   ALEO_NETWORK=testnet
+# Required:  ALEO_NETWORK=testnet
+# Optional:  ANTHROPIC_API_KEY, GEMINI_API_KEY, TELEGRAM_BOT_TOKEN
 
-# Run
 pnpm dev
-
-# The server starts:
-#   Web dashboard: http://localhost:3000
-#   MCP server:    http://localhost:3001
-#   Telegram bot:  polling
+# Web dashboard:  http://localhost:3000
+# MCP server:     http://localhost:3001
+# Telegram bot:   polling (if token configured)
 ```
 
 ### Build Frontend
 
 ```bash
-cd web-next
-pnpm install
-npx next build    # Static export to out/
+cd web-next && pnpm install && npx next build
 ```
 
 ### Run Tests
 
 ```bash
-pnpm test         # 136 tests across 12 files
+pnpm test    # 136 tests, 12 files, <1s
 ```
 
 ### Build Leo Programs
 
 ```bash
-cd programs/ghost_trade
-leo build         # Compile ghost_trade_v2.aleo
-
-cd ../ghost_launchpad
-leo build         # Compile ghost_launchpad_v1.aleo
-
-cd ../ghost_zklogin
-leo build         # Compile ghost_zklogin_v1.aleo
+cd programs/ghost_trade   && leo build   # ghost_trade_v2.aleo
+cd ../ghost_launchpad     && leo build   # ghost_launchpad_v1.aleo
+cd ../ghost_zklogin       && leo build   # ghost_zklogin_v1.aleo
 ```
 
 ---
@@ -302,121 +393,68 @@ leo build         # Compile ghost_zklogin_v1.aleo
 ## Project Structure
 
 ```
-ghost/
-├── programs/                          # Leo smart contracts (on-chain)
-│   ├── ghost_trade/src/main.leo       # Private swaps, transfers, proofs
+noir/
+├── programs/                          # Leo smart contracts (3 programs, 13 transitions)
+│   ├── ghost_trade/src/main.leo       # Private swaps, transfers, proofs, USDCx
 │   ├── ghost_launchpad/src/main.leo   # Bonding curve meme coin launchpad
-│   └── ghost_zklogin/src/main.leo     # OAuth identity commitment registry
+│   └── ghost_zklogin/src/main.leo     # OAuth → ZK commitment registry
 │
-├── src/                               # Backend (TypeScript)
-│   ├── agent/                         # AI agent core
-│   │   ├── ai.ts                      # Claude API integration (21 tools)
-│   │   ├── parser.ts                  # Intent parsing (AI → LLM → regex)
-│   │   └── actions.ts                 # Action handlers for all 21 intents
-│   ├── aleo/                          # Blockchain layer
-│   │   ├── client.ts                  # Aleo SDK initialization
-│   │   ├── trade.ts                   # On-chain trade execution
-│   │   ├── wallet.ts                  # Account & key management
-│   │   ├── session-wallet.ts          # Autonomous session wallets
-│   │   └── zklogin.ts                 # zkLogin commitment computation
-│   ├── chat/                          # Multi-interface layer
-│   │   ├── telegram.ts                # Telegram bot (grammY)
-│   │   ├── discord.ts                 # Discord bot (discord.js)
-│   │   ├── web-server.ts             # HTTP + WebSocket server
-│   │   ├── web-api.ts                # REST API (20+ endpoints)
-│   │   └── cli.ts                     # Terminal interface
-│   ├── market/                        # Market intelligence
-│   │   ├── prices.ts                  # CoinGecko price feeds
-│   │   ├── indicators.ts             # RSI, Bollinger Bands, SMA
-│   │   ├── alerts.ts                  # Price alert engine
-│   │   ├── strategies.ts             # DCA, rebalance, stop-loss
-│   │   └── copy.ts                    # Copy trading engine
-│   ├── launchpad/                     # Meme coin bonding curve
-│   │   └── engine.ts                  # On-chain state + pricing
-│   ├── mcp/                           # AI-to-AI protocol
-│   │   └── server.ts                  # MCP server (StreamableHTTP)
-│   └── storage/
-│       └── db.ts                      # SQLite (12 tables, inline migrations)
+├── src/                               # Backend (28 TypeScript modules)
+│   ├── agent/                         # Dual AI: Claude (text) + Gemini (voice)
+│   ├── aleo/                          # Blockchain: trade, wallet, session-wallet, zklogin
+│   ├── auth/                          # Google OAuth token exchange + JWT verification
+│   ├── chat/                          # 6 interfaces: web, telegram, discord, cli, mcp, voice
+│   ├── market/                        # Pyth oracle, indicators, alerts, DCA, copy trading
+│   ├── launchpad/                     # Bonding curve engine (on-chain state reads)
+│   ├── mcp/                           # Model Context Protocol server
+│   └── storage/                       # SQLite (12 tables, inline migrations)
 │
-├── web-next/                          # Frontend (Next.js 16)
+├── web-next/                          # Frontend (Next.js 16, 31 components, 10 routes)
 │   └── src/
-│       ├── app/                       # 9 routes (dashboard, chat, market, etc.)
-│       ├── components/                # UI components + animation primitives
-│       └── lib/                       # API client, WebSocket context, auth
+│       ├── app/                       # /dashboard /chat /privacy /launchpad /market
+│       │                              # /strategies /history + root + not-found
+│       ├── components/                # Glassmorphism UI, animation primitives, voice controls
+│       └── lib/                       # API client, WS context, auth, wallet, Gemini voice
 │
-├── tests/                             # Vitest (136 tests, 12 files)
-├── sdk/                               # @noir-protocol/sdk (tree-shakeable)
-├── PLAN.md                            # 5-wave development plan
-└── BUILD.md                           # Build plan & architecture decisions
+├── sdk/                               # @noir-protocol/sdk
+│   └── src/                           # Trade, Launchpad, zkLogin, Indicators, Explorer
+│       ├── trade/                     # TradeClient + token registry
+│       ├── launchpad/                 # LaunchpadClient + bonding curve math
+│       ├── zklogin/                   # ZkLoginClient + commitment functions
+│       ├── indicators/                # RSI, Bollinger, SMA (pure functions)
+│       └── network/                   # ExplorerClient + network config
+│
+└── tests/                             # Vitest (136 tests, 12 suites)
 ```
 
 ---
 
-## How It Works
+## What We Built
 
-### 1. User sends a message
-Via Telegram, Discord, Web chat, CLI, or MCP.
-
-### 2. AI parses intent
-Claude API with 21 tool definitions maps natural language to structured actions. Falls back to regex for offline/no-API operation.
-
-### 3. Agent executes
-Builds Aleo transaction inputs, generates ZK proof locally, signs with user's key (or session wallet for autonomous trading).
-
-### 4. Private on-chain execution
-Encrypted transaction + ZK proof submitted to Aleo network. Validators verify the proof without seeing any inputs. Private records are created/consumed.
-
-### 5. User gets confirmation
-"Done. Bought 100 ALEO privately. Tx: at1x7k9..."
-
-**The smart contract babysits the AI.** Even a compromised agent can't violate position limits or spend more than the user holds — the ZK proof literally fails to generate.
-
----
-
-## Competitive Positioning
-
-```
-                HIGH PRIVACY
-                     │
-                     │
-          Ghost ★    │
-                     │
-                     │
-LOW UX ──────────────┼────────────────── HIGH UX
-                     │
-                     │          ○ Bankr
-                     │          ○ Griffain
-                     │          ○ Hey Anon
-                     │
-                LOW PRIVACY
-```
-
-Ghost is the **only product** that combines consumer-grade UX with real cryptographic privacy. Every competitor operates on transparent chains where all trading activity is public.
-
----
-
-## What We Built (Buildathon Progress)
-
-| Wave | Features Shipped |
-|------|-----------------|
-| 1 | Leo program, Telegram bot, buy/sell/portfolio, testnet deployment |
+| Wave | What Shipped |
+|------|-------------|
+| 1 | Leo smart contract, Telegram bot, buy/sell/portfolio, **testnet deployment** |
 | 2 | DCA, rebalancing, stop-loss, CLI, limit orders |
-| 3 | Ghost mode, proof of holdings, Discord, web dashboard |
-| 4 | Market intelligence, RSI/Bollinger, alerts, reasoning traces, MCP |
-| 5 | Next.js 16 frontend, Shield Wallet, launchpad, copy trading, session wallets, AI agent (Claude) |
+| 3 | Dark mode (go dark), ZK proof of holdings, Discord bot, web dashboard |
+| 4 | Pyth oracle, RSI/Bollinger, smart alerts, reasoning traces, MCP server |
+| 5 | Next.js 16 frontend, Shield Wallet, launchpad, copy trading, session wallets, Claude agent |
+| 6 | **Gemini Voice Agent**, Privacy Dashboard, zkLogin (Google OAuth), all 3 contracts deployed |
+| 7 | **SDK published to npm**, production deployment (Vercel + Railway), custom domain |
 
-**3 Leo programs** &middot; **27 backend modules** &middot; **34 frontend components** &middot; **136 tests** &middot; **5 interfaces**
+<p align="center">
+  <strong>3 Leo programs</strong> &middot; <strong>13 on-chain transitions</strong> &middot; <strong>28 backend modules</strong> &middot; <strong>31 frontend components</strong> &middot; <strong>1 SDK (npm)</strong> &middot; <strong>136 tests</strong> &middot; <strong>6 interfaces</strong>
+</p>
 
 ---
 
 ## Roadmap
 
-- [ ] Deploy `ghost_launchpad_v1.aleo` to testnet
-- [ ] Mainnet deployment with security audit
-- [ ] Mobile PWA with push notifications
-- [ ] Multi-DEX routing (best price across Aleo liquidity)
-- [ ] Advanced copy trading with performance scoring
-- [ ] Freemium model: free tier (5 trades/day) + Pro ($9.99/mo)
+| Timeline | Milestone |
+|----------|-----------|
+| **Now** | Mainnet deployment after security audit |
+| **Q3 2026** | Mobile PWA with push notifications, multi-DEX routing |
+| **Q4 2026** | Advanced copy trading with performance scoring, DAO governance |
+| **2027** | Freemium model: free tier (5 trades/day) + Pro ($9.99/mo) |
 
 ---
 
@@ -428,5 +466,6 @@ MIT
 
 <p align="center">
   <strong>Your AI's alpha stays yours.</strong><br/>
-  Built on <a href="https://aleo.org">Aleo</a> for the <a href="https://app.akindo.io/wave-hacks/gXdXJvJXxTJKBELvo">AKINDO Buildathon</a>
+  Built on <a href="https://aleo.org">Aleo</a> for the <a href="https://app.akindo.io/wave-hacks/gXdXJvJXxTJKBELvo">Aleo x AKINDO Buildathon</a><br/>
+  <a href="https://noiraleo.xyz">noiraleo.xyz</a> &middot; <a href="https://www.npmjs.com/package/@noir-protocol/sdk">npm: @noir-protocol/sdk</a>
 </p>
