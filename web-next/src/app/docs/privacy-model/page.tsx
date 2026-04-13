@@ -264,15 +264,15 @@ assert(amount <= holding.amount); // Can't overspend — proves you own what you
         </p>
         <CodeBlock
           language="leo"
-          filename="ghost_trade_v3/src/main.leo"
+          filename="credits.aleo (Aleo built-in)"
           code={`transition transfer_public_to_private(
     public receiver: address,
     public amount: u64,
-) -> Holding {
-    // Debits the public balance mapping
-    // Produces an encrypted Holding record
-    // On-chain: only the receiver address and amount are visible in this call
-    // After: the resulting Holding record is fully private
+) -> credits {
+    // Debits the public credits balance mapping
+    // Produces an encrypted credits record
+    // On-chain: receiver and amount are visible in this call
+    // After: the resulting record is fully private
 }`}
         />
         <p className="mt-4 text-foreground/80 leading-relaxed">

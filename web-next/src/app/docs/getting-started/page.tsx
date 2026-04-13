@@ -128,8 +128,8 @@ DISCORD_TOKEN=...               # Discord interface`}
         <h2 className="text-xl font-semibold mt-12 mb-4">Run Tests</h2>
         <CodeBlock language="bash" code="pnpm test" />
         <p className="mt-4 text-foreground/80 leading-relaxed">
-          The full suite runs <strong className="text-foreground">136 tests</strong> across{" "}
-          <strong className="text-foreground">12 suites</strong> in under 1 second.
+          The full suite runs <strong className="text-foreground">177 tests</strong> across{" "}
+          <strong className="text-foreground">14 suites</strong> in under 1 second. Plus 22 Leo on-chain contract tests.
         </p>
       </section>
 

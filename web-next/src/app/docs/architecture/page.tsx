@@ -271,11 +271,11 @@ export default function ArchitecturePage() {
 
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs">
-            <span className="font-mono font-semibold">10</span>
-            <span className="text-muted-foreground">Routes</span>
+            <span className="font-mono font-semibold">7</span>
+            <span className="text-muted-foreground">App Routes</span>
           </Badge>
           <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs">
-            <span className="font-mono font-semibold">31</span>
+            <span className="font-mono font-semibold">21</span>
             <span className="text-muted-foreground">Components</span>
           </Badge>
           <Badge variant="default" className="gap-1.5 px-3 py-1 text-xs">

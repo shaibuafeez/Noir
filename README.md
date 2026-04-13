@@ -15,8 +15,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Aleo-Testnet_(3_contracts_deployed)-6366f1?style=flat-square" alt="Aleo Testnet" />
-  <img src="https://img.shields.io/badge/Leo-v4.0_(13_transitions)-10b981?style=flat-square" alt="Leo v4" />
-  <img src="https://img.shields.io/badge/Tests-136%20passing-22c55e?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Leo-v4.0_(18_transitions)-10b981?style=flat-square" alt="Leo v4" />
+  <img src="https://img.shields.io/badge/Tests-177%20passing-22c55e?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/AI-Claude_%2B_Gemini_Voice-f59e0b?style=flat-square" alt="Dual AI" />
   <a href="https://www.npmjs.com/package/@noir-protocol/sdk"><img src="https://img.shields.io/npm/v/@noir-protocol/sdk?style=flat-square&color=cb3837&label=SDK" alt="npm" /></a>
 </p>
@@ -44,11 +44,11 @@ All 3 smart contracts are deployed and live on Aleo Testnet:
 
 | Contract | Transitions | Status | Explorer |
 |----------|-------------|--------|----------|
-| `ghost_trade_v2.aleo` | 7 | **Deployed** | [View on Provable](https://explorer.provable.com/transaction/at1gpn6dpkud0r4k4jgdr8ylqm6tscg8llndjq748ha0kc3f5nz6g8qdf2vt5) |
-| `ghost_launchpad_v1.aleo` | 4 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_launchpad_v1.aleo) |
-| `ghost_zklogin_v1.aleo` | 2 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_zklogin_v1.aleo) |
+| `ghost_trade_v3.aleo` | 10 | **Deployed** | [View on Provable](https://explorer.provable.com/transaction/at1gpn6dpkud0r4k4jgdr8ylqm6tscg8llndjq748ha0kc3f5nz6g8qdf2vt5) |
+| `ghost_launchpad_v2.aleo` | 5 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_launchpad_v2.aleo) |
+| `ghost_zklogin_v2.aleo` | 3 | **Deployed** | [View on Provable](https://explorer.provable.com/program/ghost_zklogin_v2.aleo) |
 
-**13 total transitions** across 3 Leo programs — all producing private Aleo records.
+**18 total transitions** across 3 Leo programs — all producing private Aleo records.
 
 ---
 
@@ -80,19 +80,22 @@ Noir:   🔊 "Done. Bought 50 ALEO privately and set a 15% trailing stop-loss.
 
 Noir doesn't just run *on* Aleo — it uses zero-knowledge proofs as a core mechanic across the entire product. Here's every ZK interaction:
 
-### 1. Private Trading (ghost_trade_v2.aleo)
+### 1. Private Trading (ghost_trade_v3.aleo)
 
 Every trade creates **private Aleo records** — encrypted data that only the owner's view key can decrypt.
 
 | Transition | ZK Proof Guarantees |
 |-----------|-------------------|
+| `init_admin` | Initializes deployer as admin — can only be called once |
+| `authorize_minter` | Admin authorizes additional minter addresses |
+| `create_holding` | Proves valid token/amount pair — mints encrypted private record |
 | `swap` | Proves trade amount ≤ holding, amount ≤ 10K limit — without revealing either value |
 | `transfer_private` | Proves sender owns the record — without revealing amount, sender, or recipient |
-| `prove_minimum_balance` | Proves balance ≥ threshold — **without revealing the actual balance** |
-| `create_holding` | Proves valid token/amount pair — mints encrypted private record |
-| `buy_with_usdcx` | Proves sufficient USDCx balance — cross-token private purchase |
 | `merge_holdings` | Proves ownership of two records — consolidates without revealing amounts |
+| `prove_minimum_balance` | Proves balance ≥ threshold — **without revealing the actual balance** |
 | `burn_holding` | Proves ownership — destroys record privately |
+| `buy_with_usdcx` | Private USDCx payment via `transfer_private` — buyer/seller/amount all hidden |
+| `buy_with_usad` | Private USAD payment via `transfer_private` — dual stablecoin support |
 
 **Circuit-level safety** — the AI cannot bypass these constraints. The ZK proof literally fails to generate:
 
@@ -101,27 +104,29 @@ assert(amount <= 10000u64);       // Max trade size — enforced by the circuit
 assert(amount <= holding.amount); // Can't overspend — enforced by the circuit
 ```
 
-### 2. Private Launchpad (ghost_launchpad_v1.aleo)
+### 2. Private Launchpad (ghost_launchpad_v2.aleo)
 
 Meme coin bonding curve where **your position is private**:
 
 | Transition | ZK Proof Guarantees |
 |-----------|-------------------|
+| `create_launch` | Proves unique launch ID — initializes bonding curve with on-chain mappings |
 | `buy_token` | Proves payment ≤ credits owned, enforces `max_price` slippage — private `LaunchHolding` created |
 | `sell_token` | Proves ownership of `LaunchHolding` record — burns it, credits returned privately |
-| `create_launch` | Proves unique launch ID — initializes bonding curve with on-chain mappings |
 | `merge_holdings` | Proves ownership of two launch holdings — combines privately |
+| `claim_creator_fees` | Creator claims accumulated 2% BPS fees from treasury |
 
 The bonding curve math (`price = 1 + supply/1000`) runs on-chain in public mappings, but **who holds how much** is always private.
 
-### 3. zkLogin (ghost_zklogin_v1.aleo)
+### 3. zkLogin (ghost_zklogin_v2.aleo)
 
 Sign in with Google, get an Aleo wallet — linked by a ZK commitment, not your email:
 
 | Transition | ZK Proof Guarantees |
 |-----------|-------------------|
-| `register_zklogin` | Proves knowledge of OAuth `sub` claim → derives deterministic Aleo address, stores commitment on-chain |
+| `register_zklogin` | Proves knowledge of OAuth `sub` claim → struct-based BHP256 commitment stored on-chain |
 | `verify_identity` | Proves existing commitment matches — without revealing the OAuth identity |
+| `unregister_zklogin` | Proves ownership of commitment — removes the identity link from chain |
 
 **The chain never sees your Google identity.** It only sees a cryptographic commitment that you can later prove you own.
 
@@ -184,7 +189,7 @@ Create and trade tokens on a ZK-private bonding curve:
 
 | Interface | Tech | Status |
 |-----------|------|--------|
-| Web Dashboard | Next.js 16, 10 routes, glassmorphism UI | **Live** |
+| Web Dashboard | Next.js 16, 7 app routes + docs, glassmorphism UI | **Live** |
 | Voice Agent | Gemini Live API, real-time audio | **Live** |
 | Telegram Bot | grammY, full NL trading | **Live** |
 | Discord Bot | discord.js, slash commands | **Live** |
@@ -213,7 +218,7 @@ Four ways to connect — each with full feature access:
 | **Session Wallet** | Server-side key funded from Shield Wallet, AI trades autonomously | Delegated signing |
 | **Ephemeral Session** | Auto-generated web session, no login required | Anonymous |
 
-### 10-Page Web Dashboard
+### Web Dashboard
 
 | Route | What It Does |
 |-------|-------------|
@@ -292,13 +297,14 @@ Optional peer dep: `@provablehq/sdk` (only needed for on-chain execution).
 │  ALEO LAYER (Testnet — all deployed)                 ▼               │
 │  ┌─────────────────┐  ┌────────────────┐  ┌──────────────────────┐  │
 │  │ ghost_trade     │  │ ghost_         │  │ ghost_zklogin        │  │
-│  │ _v2.aleo        │  │ launchpad      │  │ _v1.aleo             │  │
-│  │                 │  │ _v1.aleo       │  │                      │  │
-│  │ 7 transitions:  │  │ 4 transitions: │  │ 2 transitions:       │  │
+│  │ _v3.aleo        │  │ launchpad      │  │ _v2.aleo             │  │
+│  │                 │  │ _v2.aleo       │  │                      │  │
+│  │ 10 transitions: │  │ 5 transitions: │  │ 3 transitions:       │  │
 │  │ swap, transfer, │  │ create, buy,   │  │ register_zklogin,    │  │
-│  │ prove_min_bal,  │  │ sell, merge    │  │ verify_identity      │  │
-│  │ create, merge,  │  │                │  │                      │  │
+│  │ prove_min_bal,  │  │ sell, merge,   │  │ verify_identity,     │  │
+│  │ create, merge,  │  │ claim_fees     │  │ unregister           │  │
 │  │ burn, buy_usdcx │  │                │  │                      │  │
+│  │ buy_usad, admin │  │                │  │                      │  │
 │  └─────────────────┘  └────────────────┘  └──────────────────────┘  │
 │                                                                      │
 │  Encrypted inputs → ZK proof → on-chain private records              │
@@ -327,11 +333,11 @@ Optional peer dep: `@provablehq/sdk` (only needed for on-chain execution).
 
 | Layer | Technology |
 |-------|-----------|
-| Smart Contracts | Leo 4.0 — 3 programs, 13 transitions, deployed on Aleo Testnet |
+| Smart Contracts | Leo 4.0 — 3 programs, 18 transitions, deployed on Aleo Testnet |
 | Backend | TypeScript (ESM), Node.js, 28 modules |
 | AI — Text | Anthropic Claude API (21 tool definitions + regex fallback) |
 | AI — Voice | Google Gemini Live API (real-time native audio) |
-| Frontend | Next.js 16, React 19, Tailwind CSS, framer-motion 12, 10 routes |
+| Frontend | Next.js 16, React 19, Tailwind CSS, framer-motion 12 |
 | Wallet | Shield Wallet (@provablehq/aleo-wallet-adaptor-shield) |
 | Auth | Google OAuth → zkLogin (ZK commitment on-chain) |
 | Price Oracle | Pyth Network (primary) + CoinGecko (fallback) |
@@ -339,7 +345,7 @@ Optional peer dep: `@provablehq/sdk` (only needed for on-chain execution).
 | Blockchain SDK | @provablehq/sdk |
 | Developer SDK | @noir-protocol/sdk (tree-shakeable, 5 subpath exports) |
 | Chat | grammY (Telegram), discord.js (Discord), WebSocket (Web) |
-| Testing | Vitest — 136 tests, 12 suites, all passing |
+| Testing | Vitest — 177 tests, 14 suites + 22 Leo on-chain tests, all passing |
 | Protocol | Model Context Protocol (MCP) for AI-to-AI interop |
 
 ---
@@ -377,15 +383,15 @@ cd web-next && pnpm install && npx next build
 ### Run Tests
 
 ```bash
-pnpm test    # 136 tests, 12 files, <1s
+pnpm test    # 177 tests, 14 files, <1s
 ```
 
 ### Build Leo Programs
 
 ```bash
-cd programs/ghost_trade   && leo build   # ghost_trade_v2.aleo
-cd ../ghost_launchpad     && leo build   # ghost_launchpad_v1.aleo
-cd ../ghost_zklogin       && leo build   # ghost_zklogin_v1.aleo
+cd programs/ghost_trade   && leo build   # ghost_trade_v3.aleo (10 transitions)
+cd ../ghost_launchpad     && leo build   # ghost_launchpad_v2.aleo (5 transitions)
+cd ../ghost_zklogin       && leo build   # ghost_zklogin_v2.aleo (3 transitions)
 ```
 
 ---
@@ -394,8 +400,8 @@ cd ../ghost_zklogin       && leo build   # ghost_zklogin_v1.aleo
 
 ```
 noir/
-├── programs/                          # Leo smart contracts (3 programs, 13 transitions)
-│   ├── ghost_trade/src/main.leo       # Private swaps, transfers, proofs, USDCx
+├── programs/                          # Leo smart contracts (3 programs, 18 transitions)
+│   ├── ghost_trade/src/main.leo       # Private swaps, transfers, proofs, USDCx + USAD
 │   ├── ghost_launchpad/src/main.leo   # Bonding curve meme coin launchpad
 │   └── ghost_zklogin/src/main.leo     # OAuth → ZK commitment registry
 │
@@ -409,7 +415,7 @@ noir/
 │   ├── mcp/                           # Model Context Protocol server
 │   └── storage/                       # SQLite (12 tables, inline migrations)
 │
-├── web-next/                          # Frontend (Next.js 16, 31 components, 10 routes)
+├── web-next/                          # Frontend (Next.js 16, 21 components, 7 app routes)
 │   └── src/
 │       ├── app/                       # /dashboard /chat /privacy /launchpad /market
 │       │                              # /strategies /history + root + not-found
@@ -424,7 +430,7 @@ noir/
 │       ├── indicators/                # RSI, Bollinger, SMA (pure functions)
 │       └── network/                   # ExplorerClient + network config
 │
-└── tests/                             # Vitest (136 tests, 12 suites)
+└── tests/                             # Vitest (177 tests, 14 suites)
 ```
 
 ---
@@ -440,9 +446,10 @@ noir/
 | 5 | Next.js 16 frontend, Shield Wallet, launchpad, copy trading, session wallets, Claude agent |
 | 6 | **Gemini Voice Agent**, Privacy Dashboard, zkLogin (Google OAuth), all 3 contracts deployed |
 | 7 | **SDK published to npm**, production deployment (Vercel + Railway), custom domain |
+| 8 | Privacy audit fixes (struct-based zkLogin hash, private stablecoin transfers), USAD support, TRUST.md |
 
 <p align="center">
-  <strong>3 Leo programs</strong> &middot; <strong>13 on-chain transitions</strong> &middot; <strong>28 backend modules</strong> &middot; <strong>31 frontend components</strong> &middot; <strong>1 SDK (npm)</strong> &middot; <strong>136 tests</strong> &middot; <strong>6 interfaces</strong>
+  <strong>3 Leo programs</strong> &middot; <strong>18 on-chain transitions</strong> &middot; <strong>28 backend modules</strong> &middot; <strong>21 frontend components</strong> &middot; <strong>1 SDK (npm)</strong> &middot; <strong>177 tests</strong> &middot; <strong>6 interfaces</strong>
 </p>
 
 ---

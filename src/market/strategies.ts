@@ -56,32 +56,38 @@ async function runDcaStrategies(bot: Bot): Promise<void> {
 
     // Time to execute
     const price = await getPrice(s.token);
+    if (price === 0) continue; // Skip if price unavailable
+
     const amount = s.amount / price; // Convert $ amount to token amount
 
     const account = loadWallet(s.telegram_id);
     if (!account) continue;
 
-    console.log(`[dca] Executing DCA #${s.id}: $${s.amount} of ${s.token}`);
-
-    const result = await executeSwap(
-      account,
-      s.telegram_id,
-      "buy",
-      s.token,
-      amount,
-      price,
-    );
-
-    updateDcaLastExecuted(s.id);
-
-    // Notify user
     try {
-      await bot.api.sendMessage(
-        Number(s.telegram_id),
-        `DCA #${s.id} executed:\n${result.message}`,
+      console.log(`[dca] Executing DCA #${s.id}: $${s.amount} of ${s.token}`);
+
+      const result = await executeSwap(
+        account,
+        s.telegram_id,
+        "buy",
+        s.token,
+        amount,
+        price,
       );
-    } catch {
-      // User may have blocked the bot
+
+      updateDcaLastExecuted(s.id);
+
+      try {
+        await bot.api.sendMessage(
+          Number(s.telegram_id),
+          `DCA #${s.id} executed:\n${result.message}`,
+        );
+      } catch {
+        // User may have blocked the bot
+      }
+    } catch (err) {
+      console.error(`[dca] DCA #${s.id} failed:`, err);
+      updateDcaLastExecuted(s.id); // Still update to prevent retry loop
     }
   }
 }

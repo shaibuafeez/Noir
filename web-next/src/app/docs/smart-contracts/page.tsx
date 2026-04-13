@@ -7,17 +7,17 @@ import { Card, CardContent } from "@/components/ui/card";
 const programs = [
   {
     name: "ghost_trade_v3.aleo",
-    transitions: 7,
-    description: "Core private trading engine",
+    transitions: 10,
+    description: "Core private trading engine — USDCx + USAD",
   },
   {
     name: "ghost_launchpad_v2.aleo",
-    transitions: 4,
+    transitions: 5,
     description: "Bonding curve meme coin launchpad",
   },
   {
     name: "ghost_zklogin_v2.aleo",
-    transitions: 2,
+    transitions: 3,
     description: "OAuth identity commitment registry",
   },
 ];
@@ -34,7 +34,7 @@ export default function SmartContractsPage() {
           Smart Contracts
         </h1>
         <p className="mt-2 text-foreground/80 leading-relaxed">
-          3 Leo programs, 13 transitions, all deployed on Aleo Testnet.
+          3 Leo programs, 18 transitions, all deployed on Aleo Testnet.
         </p>
       </section>
 
@@ -67,7 +67,7 @@ export default function SmartContractsPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mt-12 mb-4">ghost_trade_v3.aleo</h2>
         <p className="mb-4 text-foreground/80 leading-relaxed">
-          Core trading program. 7 transitions. All state is private Aleo records.
+          Core trading program. 10 transitions. All state is private Aleo records. Dual stablecoin support (USDCx + USAD).
         </p>
 
         <div className="overflow-x-auto rounded-lg border border-border/40">
@@ -81,9 +81,19 @@ export default function SmartContractsPage() {
             </thead>
             <tbody className="divide-y divide-border/20">
               <tr>
+                <td className="px-4 py-3"><InlineCode>init_admin</InlineCode></td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">&mdash;</td>
+                <td className="px-4 py-3 text-foreground/70">Initialize deployer as admin (one-time)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3"><InlineCode>authorize_minter</InlineCode></td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">minter: address</td>
+                <td className="px-4 py-3 text-foreground/70">Admin authorizes additional minter addresses</td>
+              </tr>
+              <tr>
                 <td className="px-4 py-3"><InlineCode>create_holding</InlineCode></td>
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">token: field, amount: u64</td>
-                <td className="px-4 py-3 text-foreground/70">Mint a private token holding record</td>
+                <td className="px-4 py-3 text-foreground/70">Mint a private token holding record (minters only)</td>
               </tr>
               <tr>
                 <td className="px-4 py-3"><InlineCode>swap</InlineCode></td>
@@ -112,8 +122,13 @@ export default function SmartContractsPage() {
               </tr>
               <tr>
                 <td className="px-4 py-3"><InlineCode>buy_with_usdcx</InlineCode></td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">holding: Holding, to_token: field, amount: u64</td>
-                <td className="px-4 py-3 text-foreground/70">Cross-token private purchase with USDCx</td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">token, amount, cost, seller, Token, MerkleProof[]</td>
+                <td className="px-4 py-3 text-foreground/70">Private USDCx purchase via transfer_private</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3"><InlineCode>buy_with_usad</InlineCode></td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">token, amount, cost, seller, Token, MerkleProof[]</td>
+                <td className="px-4 py-3 text-foreground/70">Private USAD purchase via transfer_private</td>
               </tr>
             </tbody>
           </table>
@@ -137,7 +152,7 @@ export default function SmartContractsPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mt-12 mb-4">ghost_launchpad_v2.aleo</h2>
         <p className="mb-4 text-foreground/80 leading-relaxed">
-          Bonding curve meme coin launchpad. 4 transitions.
+          Bonding curve meme coin launchpad. 5 transitions.
         </p>
 
         <div className="overflow-x-auto rounded-lg border border-border/40">
@@ -170,6 +185,11 @@ export default function SmartContractsPage() {
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">a: LaunchHolding, b: LaunchHolding</td>
                 <td className="px-4 py-3 text-foreground/70">Combine two launch holdings</td>
               </tr>
+              <tr>
+                <td className="px-4 py-3"><InlineCode>claim_creator_fees</InlineCode></td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">launch_id: field</td>
+                <td className="px-4 py-3 text-foreground/70">Creator claims accumulated 2% BPS fees</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -201,7 +221,7 @@ export default function SmartContractsPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mt-12 mb-4">ghost_zklogin_v2.aleo</h2>
         <p className="mb-4 text-foreground/80 leading-relaxed">
-          OAuth identity commitment registry. 2 transitions.
+          OAuth identity commitment registry. 3 transitions. Struct-based BHP256 hash prevents collision attacks.
         </p>
 
         <div className="overflow-x-auto rounded-lg border border-border/40">
@@ -221,8 +241,13 @@ export default function SmartContractsPage() {
               </tr>
               <tr>
                 <td className="px-4 py-3"><InlineCode>verify_identity</InlineCode></td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">commitment: field</td>
-                <td className="px-4 py-3 text-foreground/70">Verify existing commitment matches</td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">salt, iss_hash, sub_hash, timestamp</td>
+                <td className="px-4 py-3 text-foreground/70">Verify existing commitment matches caller</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3"><InlineCode>unregister_zklogin</InlineCode></td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">salt, iss_hash, sub_hash</td>
+                <td className="px-4 py-3 text-foreground/70">Remove commitment — proves ownership of preimage</td>
               </tr>
             </tbody>
           </table>
