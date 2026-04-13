@@ -13,12 +13,14 @@ import { ShieldWalletAdapter } from "@provablehq/aleo-wallet-adaptor-shield";
 
 import "@provablehq/aleo-wallet-adaptor-react-ui/dist/styles.css";
 
-const WALLETS = [new ShieldWalletAdapter()];
-
 export function AleoWalletWrapper({ children }: { children: React.ReactNode }) {
+  const wallets = React.useMemo(
+    () => (typeof window !== "undefined" ? [new ShieldWalletAdapter()] : []),
+    [],
+  );
   return (
     <AleoWalletProvider
-      wallets={WALLETS}
+      wallets={wallets}
       network={"testnet" as any}
       autoConnect
       decryptPermission={"DECRYPT_UPON_REQUEST" as any}

@@ -9,7 +9,7 @@ import {
   X,
   Zap,
   Terminal,
-  Mic,
+  Headset,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -181,10 +181,13 @@ export default function ChatPage() {
                 variant={voiceMode ? "destructive" : "outline"}
                 onClick={handleVoiceToggle}
                 disabled={!connected}
-                className="h-8 w-8 shrink-0 p-0"
-                title={voiceMode ? "End voice session" : "Start voice session"}
+                className="h-8 shrink-0 gap-1.5 px-2.5"
+                title={voiceMode ? "End voice chat" : "Start live voice chat"}
               >
-                <Mic className="h-3.5 w-3.5" />
+                <Headset className="h-3.5 w-3.5" />
+                <span className="text-[11px] hidden sm:inline">
+                  {voiceMode ? "End" : "Voice"}
+                </span>
               </Button>
               <Button
                 size="sm"

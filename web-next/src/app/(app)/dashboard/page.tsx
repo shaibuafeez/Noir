@@ -66,6 +66,38 @@ export default function DashboardPage() {
   const { sessionId, authSession, liveMarket } = useWs();
   const [privacyMode, setPrivacyMode] = React.useState(false);
 
+  const isAuthed = Boolean(authSession);
+  const portfolio = useApi(
+    () => api.portfolio(sessionId!),
+    [sessionId],
+    isAuthed && Boolean(sessionId),
+    30_000,
+  );
+  const strategies = useApi(
+    () => api.strategies(sessionId!),
+    [sessionId],
+    isAuthed && Boolean(sessionId),
+  );
+  const trades = useApi(
+    () => api.trades(sessionId!),
+    [sessionId],
+    isAuthed && Boolean(sessionId),
+  );
+  const balanceAleo = useApi(
+    () => api.balance(sessionId!),
+    [sessionId],
+    isAuthed && Boolean(sessionId),
+  );
+  const balanceUsdcx = useApi(
+    () => api.balanceUsdcx(sessionId!),
+    [sessionId],
+    isAuthed && Boolean(sessionId),
+  );
+
+  // Compute live holdings (hook must be called unconditionally)
+  const rawHoldings = portfolio.data?.holdings ?? [];
+  const holdings = useLiveHoldings(rawHoldings, liveMarket);
+
   // ── Unauthenticated: Welcome + Explore ──
   if (!authSession) {
     return (
@@ -185,37 +217,8 @@ export default function DashboardPage() {
 
   // ── Authenticated: Full dashboard ──
 
-  const portfolio = useApi(
-    () => api.portfolio(sessionId!),
-    [sessionId],
-    Boolean(sessionId),
-    30_000,
-  );
-  const strategies = useApi(
-    () => api.strategies(sessionId!),
-    [sessionId],
-    Boolean(sessionId),
-  );
-  const trades = useApi(
-    () => api.trades(sessionId!),
-    [sessionId],
-    Boolean(sessionId),
-  );
-  const balanceAleo = useApi(
-    () => api.balance(sessionId!),
-    [sessionId],
-    Boolean(sessionId),
-  );
-  const balanceUsdcx = useApi(
-    () => api.balanceUsdcx(sessionId!),
-    [sessionId],
-    Boolean(sessionId),
-  );
-
   const mask = (v: string) => (privacyMode ? "•••••" : v);
 
-  const rawHoldings = portfolio.data?.holdings ?? [];
-  const holdings = useLiveHoldings(rawHoldings, liveMarket);
   const totalValue = holdings.reduce((s, h) => s + h.value, 0);
   const change24h =
     totalValue > 0

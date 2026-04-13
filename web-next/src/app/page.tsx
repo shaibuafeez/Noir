@@ -4,14 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   Eclipse,
-  EyeOff,
-  Zap,
-  Shield,
-  Users,
-  Repeat,
-  Bell,
   ArrowRight,
-  Lock,
   Cpu,
   Menu,
   X,
@@ -212,7 +205,7 @@ function FloatingOrbs() {
       {orbs.map((orb, i) => (
         <motion.div
           key={i}
-          className={`pointer-events-none absolute rounded-full bg-primary/[0.04] blur-[80px] ${
+          className={`pointer-events-none absolute rounded-full bg-primary/[0.08] blur-[80px] ${
             !orb.mobile ? "hidden md:block" : ""
           }`}
           style={{
@@ -333,27 +326,21 @@ export default function Landing() {
 
       {/* ─── HERO ─── */}
       <section className="relative z-10 mx-auto max-w-7xl px-6 pb-40 pt-32 text-center md:pb-56 md:pt-48">
-        <FadeIn>
-          <Badge variant="outline" className="mb-12 font-mono text-[10px] tracking-widest uppercase border-border/40 text-muted-foreground">
-            Zero-Knowledge Trading · Live on Aleo
-          </Badge>
-        </FadeIn>
-
         <FadeIn delay={0.2}>
           <h1 className="mx-auto max-w-5xl text-balance text-6xl font-medium tracking-tighter md:text-8xl lg:text-[7.5rem] leading-[1.1]">
-            Your portfolio<br />
-            is a <span className="text-muted-foreground/60 italic font-serif">secret.</span>
+            Trade private.<br />
+            <span className="text-muted-foreground/60 italic font-serif">Talk natural.</span>
           </h1>
         </FadeIn>
 
         <FadeIn delay={0.4}>
           <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl leading-relaxed text-muted-foreground/80 font-light">
-            Noir is an AI trading agent that runs on Aleo&apos;s private
-            zkVM. Every trade is a zero-knowledge proof. Nobody sees what
-            you hold, what you buy, or who you copy.
+            An AI trading agent on Aleo&apos;s private zkVM. Trade by text or voice,
+            launch tokens, copy traders, automate strategies &mdash; all shielded
+            by zero-knowledge proofs.
           </p>
           <p className="mx-auto mt-4 text-sm font-medium text-primary/80 tracking-wide">
-            Available on Web, Voice, Telegram, Discord, CLI &amp; SDK
+            Web, Voice, Telegram, Discord, CLI &amp; SDK
           </p>
         </FadeIn>
 
@@ -371,7 +358,7 @@ export default function Landing() {
         <StatsTicker />
       </section>
 
-      {/* ─── FEATURES ─── */}
+      {/* ─── FEATURES — Bento Grid ─── */}
       <section id="features" className="relative z-10 border-t border-border/30">
         <div className="absolute inset-0 bg-gradient-to-b from-card/30 to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-6 py-28">
@@ -383,63 +370,69 @@ export default function Landing() {
             </h2>
           </div>
 
-          <StaggerContainer className="mt-20 grid gap-4 md:grid-cols-2 lg:grid-cols-3" delay={0.2}>
-            <StaggerItem>
-              <FeatureCard
-                icon={Shield}
+          <div className="mt-20 grid grid-cols-1 gap-3 md:grid-cols-6">
+            {/* Row 1: 4 + 2 */}
+            <FadeIn delay={0.1} className="md:col-span-4">
+              <BentoCard
+                label="Privacy"
                 title="Private Holdings"
                 desc="Every buy creates a ZK record. Balances live in the shielded pool — invisible to chain analysts, exchanges, MEV bots."
+                large
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={Zap}
+            </FadeIn>
+            <FadeIn delay={0.15} className="md:col-span-2">
+              <BentoCard
+                label="AI"
                 title="Natural Language"
-                desc='"buy 100 ALEO", "if ALEO drops 15%, sell half", "stack $50/week". An AI agent that speaks your language.'
+                desc={'"buy 100 ALEO", "if ALEO drops 15%, sell half", "stack $50/week". An AI agent that speaks your language.'}
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={Users}
+            </FadeIn>
+
+            {/* Row 2: 2 + 2 + 2 */}
+            <FadeIn delay={0.2} className="md:col-span-2">
+              <BentoCard
+                label="Social"
                 title="Copy Trading"
                 desc="Mirror any Noir user privately. Leaders never know who follows them. Followers never leak positions."
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={Repeat}
+            </FadeIn>
+            <FadeIn delay={0.25} className="md:col-span-2">
+              <BentoCard
+                label="Automation"
                 title="DCA & Rebalance"
                 desc="Automated dollar-cost averaging. Portfolio drift rebalancing. Runs on a private schedule."
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={Bell}
+            </FadeIn>
+            <FadeIn delay={0.3} className="md:col-span-2">
+              <BentoCard
+                label="Signals"
                 title="Smart Alerts"
                 desc="Conditional automation. RSI, Bollinger bands, price triggers. Agent reasons, you stay in control."
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={EyeOff}
+            </FadeIn>
+
+            {/* Row 3: 3 + 3 */}
+            <FadeIn delay={0.35} className="md:col-span-3">
+              <BentoCard
+                label="Stealth"
                 title="Noir Mode"
-                desc='One command: "go dark". All public balances move to private records. Your wallet vanishes from explorers.'
+                desc={'One command: "go dark". All public balances move to private records. Your wallet vanishes from explorers.'}
               />
-            </StaggerItem>
-            <StaggerItem>
-              <FeatureCard
-                icon={Cpu}
+            </FadeIn>
+            <FadeIn delay={0.4} className="md:col-span-3">
+              <BentoCard
+                label="Build"
                 title="Developer SDK"
                 desc="npm install @noir-protocol/sdk — trade, launch tokens, ZK proofs, technical indicators. Build on Noir."
               />
-            </StaggerItem>
-          </StaggerContainer>
+            </FadeIn>
+          </div>
         </div>
       </section>
 
       {/* ─── TRY NOIR EVERYWHERE ─── */}
       <section id="platforms" className="relative z-10 border-t border-border/30">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-6 py-28">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
@@ -502,7 +495,7 @@ export default function Landing() {
               },
             ].map((p) => (
               <StaggerItem key={p.title}>
-                <TiltCard className="group flex h-full flex-col p-6 transition-all duration-300 hover:border-primary/20">
+                <TiltCard className="group flex h-full flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 transition-colors group-hover:bg-primary/12">
                       <p.icon className="h-5 w-5 text-primary" />
@@ -564,7 +557,7 @@ export default function Landing() {
               <React.Fragment key={setIdx}>
                 {["Aleo", "Zero Knowledge", "Private", "Shielded", "ZK Proofs", "Noir Protocol", "On-Chain", "Verifiable"].map(
                   (word, i) => (
-                    <span key={`${setIdx}-${i}`} className="flex items-center gap-4 px-4 font-mono text-xs uppercase tracking-widest text-muted-foreground/40">
+                    <span key={`${setIdx}-${i}`} className="flex items-center gap-4 px-4 font-mono text-xs uppercase tracking-widest text-muted-foreground/60">
                       {word}
                       <span className="h-1 w-1 rounded-full bg-muted-foreground/20" />
                     </span>
@@ -630,7 +623,7 @@ function CTASection({ isMobile }: { isMobile: boolean }) {
         rotateY,
         transformPerspective: 800,
       }}
-      className="glass-card glow-border-trace rounded-2xl p-10 md:p-14"
+      className="rounded-2xl border border-border bg-card p-10 shadow-lg md:p-14"
       initial={{ opacity: 0, y: 40, scale: 0.95 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
@@ -667,34 +660,33 @@ function CTASection({ isMobile }: { isMobile: boolean }) {
   );
 }
 
-/* ─── Feature card with TiltCard ─── */
-function FeatureCard({
-  icon: Icon,
+/* ─── Bento card ─── */
+function BentoCard({
+  label,
   title,
   desc,
+  large,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  label: string;
   title: string;
   desc: string;
+  large?: boolean;
 }) {
   return (
-    <TiltCard className="group relative overflow-hidden rounded-3xl border-2 border-border/40 bg-card p-10 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-2xl">
-      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/[0.04] blur-3xl transition-all duration-700 group-hover:bg-primary/10 group-hover:scale-150" />
-      <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-2 ring-primary/20 shadow-inner transition-colors duration-500 group-hover:bg-primary/20 group-hover:ring-primary/40">
-        <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Icon className="h-7 w-7 text-primary" />
-        </motion.div>
-      </div>
-      <div className="relative mt-10">
-        <h3 className="text-2xl font-bold tracking-tight text-foreground">{title}</h3>
-        <p className="mt-3 text-base leading-relaxed font-medium text-muted-foreground/80">
+    <div className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-500 hover:border-primary/40 hover:shadow-lg md:p-8">
+      <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary/[0.06] blur-3xl transition-all duration-700 group-hover:bg-primary/15 group-hover:scale-150" />
+      <span className="relative inline-block rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-primary">
+        {label}
+      </span>
+      <div className="relative mt-4">
+        <h3 className={`font-semibold tracking-tight text-foreground ${large ? "text-xl md:text-2xl" : "text-lg"}`}>
+          {title}
+        </h3>
+        <p className={`mt-2 leading-relaxed text-muted-foreground ${large ? "text-sm md:text-base max-w-xl" : "text-sm"}`}>
           {desc}
         </p>
       </div>
-    </TiltCard>
+    </div>
   );
 }
 

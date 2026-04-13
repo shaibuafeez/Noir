@@ -64,8 +64,8 @@ function DesktopGallery() {
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <div className="mx-auto flex w-full max-w-3xl items-start gap-8 px-6">
           {/* Vertical progress bar */}
-          <div className="relative hidden h-[340px] w-px flex-shrink-0 md:block">
-            <div className="absolute inset-0 bg-border/30 rounded-full" />
+          <div className="relative hidden h-[340px] w-[2px] flex-shrink-0 md:block">
+            <div className="absolute inset-0 bg-border rounded-full" />
             <motion.div
               className="absolute top-0 left-0 w-full rounded-full bg-primary"
               style={{ height: progressHeight }}
@@ -78,10 +78,10 @@ function DesktopGallery() {
                 style={{ top: `${(i / (STEPS.length - 1)) * 100}%` }}
               >
                 <div
-                  className={`h-2.5 w-2.5 rounded-full border-2 transition-colors duration-300 ${
+                  className={`h-3 w-3 rounded-full border-2 transition-colors duration-300 ${
                     i <= active
                       ? "border-primary bg-primary"
-                      : "border-muted-foreground/30 bg-background"
+                      : "border-muted-foreground/50 bg-card"
                   }`}
                 />
               </div>
@@ -91,13 +91,13 @@ function DesktopGallery() {
           <div className="flex-1">
             {/* Step counter */}
             <div className="mb-4 flex items-baseline gap-3">
-              <span className="text-7xl font-bold text-primary/10 tabular-nums">
+              <span className="text-7xl font-bold text-primary/40 tabular-nums">
                 <AnimatedNumber
                   value={active + 1}
                   format={(n) => `0${Math.round(n)}`}
                 />
               </span>
-              <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground/50">
+              <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
                 / 03
               </span>
             </div>

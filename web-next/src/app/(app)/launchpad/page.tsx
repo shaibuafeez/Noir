@@ -37,7 +37,7 @@ import {
   AnimatedNumber,
   PageWrapper,
   Shimmer,
-  PulseGlow,
+
   motion,
   AnimatePresence,
 } from "@/components/motion";
@@ -178,9 +178,8 @@ export default function LaunchpadPage() {
         <div className="flex flex-col gap-5 rounded-2xl border-2 border-primary/15 bg-card p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                <span className="gradient-text">Launchpad</span>
-                <PulseGlow color="primary" size={8} />
+              <h1 className="text-3xl font-bold tracking-tight">
+                Launchpad
               </h1>
               <p className="mt-1 text-sm text-foreground/60 font-medium">
                 Private zero-knowledge bonding curves on Aleo

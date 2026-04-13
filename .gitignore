@@ -17,3 +17,4 @@ web.old/
 web-next/.next/
 web-next/node_modules/
 web-next/out/
+.vercel

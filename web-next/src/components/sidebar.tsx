@@ -72,16 +72,7 @@ export function Sidebar() {
             </div>
           </div>
           <div className="ml-auto shrink-0">
-            {shield.connected ? (
-              <button
-                onClick={() => shield.disconnect()}
-                className="flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-1.5 text-[10px] font-mono text-primary/80 transition-all hover:border-destructive/30 hover:text-destructive"
-                title="Disconnect Shield Wallet"
-              >
-                <Shield className="h-3 w-3" />
-                {shield.address ? shortAddress(shield.address, 4) : "Connected"}
-              </button>
-            ) : !authSession ? (
+            {!shield.connected && !authSession ? (
               <ConnectWallet compact />
             ) : null}
           </div>
@@ -151,7 +142,29 @@ export function Sidebar() {
             )}
           </div>
 
-          {authSession ? (
+          {shield.connected ? (
+            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/[0.04] p-3">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium">Shield Wallet</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-primary/60">
+                    active wallet
+                  </div>
+                </div>
+              </div>
+              {shield.address && (
+                <CopyAddress address={shield.address} />
+              )}
+              <button
+                onClick={() => shield.disconnect()}
+                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
+              >
+                <LogOut className="h-3 w-3" />
+                Disconnect
+              </button>
+            </div>
+          ) : authSession ? (
             <div className="mt-3 rounded-lg border border-border/40 bg-background/40 p-3">
               <div className="flex items-center gap-2">
                 {authSession.picture && (
@@ -299,13 +312,10 @@ export function MobileHeader() {
       </div>
       <div className="flex items-center gap-3">
         {shield.connected ? (
-          <button
-            onClick={() => shield.disconnect()}
-            className="flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-1.5 text-[10px] font-mono text-primary/80 transition-all hover:border-destructive/30 hover:text-destructive"
-          >
+          <div className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/[0.06] px-2 py-1.5 text-[10px] font-mono text-primary/80">
             <Shield className="h-3 w-3" />
-            {shield.address ? shortAddress(shield.address, 4) : "Connected"}
-          </button>
+            {shield.address ? shortAddress(shield.address, 4) : "Shield"}
+          </div>
         ) : !authSession ? (
           <ConnectWallet compact />
         ) : null}

@@ -94,13 +94,14 @@
 
 /* ─── Glassmorphism ─── */
 .glass-card {
-  background: hsl(var(--card) / 0.6);
+  background: hsl(var(--card));
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 1px solid hsl(var(--border) / 0.8);
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
 }
 
 .glass-card::before {
