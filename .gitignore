@@ -6,4 +6,11 @@ dist/
 *.db-shm
 programs/ghost_trade/build/
 programs/ghost_trade/outputs/
+programs/ghost_launchpad/build/
+programs/ghost_launchpad/outputs/
+programs/ghost_zklogin/build/
+programs/ghost_zklogin/outputs/
 .aleo-keys/
+.DS_Store
+.playwright-mcp/
+web.old/
