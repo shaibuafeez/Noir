@@ -14,3 +14,6 @@ programs/ghost_zklogin/outputs/
 .DS_Store
 .playwright-mcp/
 web.old/
+web-next/.next/
+web-next/node_modules/
+web-next/out/
