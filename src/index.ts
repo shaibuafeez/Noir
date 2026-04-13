@@ -10,6 +10,7 @@ import { startWebServer } from "./chat/web-server.js";
 import { startMcpServer } from "./mcp/server.js";
 import { validateNetwork } from "./aleo/network.js";
 import { prewarmKeys } from "./aleo/key-cache.js";
+import { setCopyBot } from "./market/copy.js";
 
 function main(): void {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -35,6 +36,9 @@ function main(): void {
   // Create and start Telegram bot
   console.log("[ghost] Starting Telegram bot...");
   const bot = createBot(botToken, llmUrl);
+
+  // Wire copy trading bot reference
+  setCopyBot(bot);
 
   // Start engines
   startLimitOrderEngine(bot);

@@ -143,8 +143,24 @@ async function handleCommand(interaction: ChatInputCommandInteraction): Promise<
       }
 
       await interaction.deferReply({ ephemeral: true });
-      const intent = await parseIntent(text);
-      const result = await handleIntent(discordId, intent);
+      const parseResult = await parseIntent(text, {
+        sessionId: discordId,
+        walletAddress: getAddress(discordId),
+      });
+
+      if (!parseResult) {
+        await interaction.editReply({
+          content: "I couldn't parse that command. Try 'portfolio', 'buy 100 ALEO', or 'status'.",
+        });
+        return;
+      }
+
+      if (parseResult.type === "conversation") {
+        await interaction.editReply({ content: parseResult.message });
+        return;
+      }
+
+      const result = await handleIntent(discordId, parseResult.intent);
 
       if (result.needsConfirmation && result.confirmData) {
         const key = `${discordId}:${Date.now()}`;

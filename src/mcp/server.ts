@@ -260,8 +260,17 @@ export function startMcpServer(port = 3001): void {
     },
     async ({ command, user_id }) => {
       const uid = user_id || MCP_USER;
-      const intent = await parseIntent(command);
-      const result = await handleIntent(uid, intent);
+      const parseResult = await parseIntent(command, { sessionId: uid });
+
+      if (!parseResult) {
+        return { content: [{ type: "text", text: "Could not parse command." }] };
+      }
+
+      if (parseResult.type === "conversation") {
+        return { content: [{ type: "text", text: parseResult.message }] };
+      }
+
+      const result = await handleIntent(uid, parseResult.intent);
 
       if (result.needsConfirmation && result.confirmData) {
         // Auto-confirm for MCP (programmatic access = pre-authorized)

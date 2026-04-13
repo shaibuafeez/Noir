@@ -1,0 +1,69 @@
+{
+  "name": "@noir-protocol/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for Noir Protocol — private trading, launchpad, and zkLogin on Aleo",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./trade": {
+      "types": "./dist/trade/index.d.ts",
+      "import": "./dist/trade/index.js"
+    },
+    "./launchpad": {
+      "types": "./dist/launchpad/index.d.ts",
+      "import": "./dist/launchpad/index.js"
+    },
+    "./zklogin": {
+      "types": "./dist/zklogin/index.d.ts",
+      "import": "./dist/zklogin/index.js"
+    },
+    "./indicators": {
+      "types": "./dist/indicators/index.d.ts",
+      "import": "./dist/indicators/index.js"
+    },
+    "./network": {
+      "types": "./dist/network/index.d.ts",
+      "import": "./dist/network/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "aleo",
+    "privacy",
+    "trading",
+    "zk",
+    "launchpad",
+    "zklogin",
+    "noir-protocol"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@provablehq/sdk": ">=0.10.0"
+  },
+  "peerDependenciesMeta": {
+    "@provablehq/sdk": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@provablehq/sdk": "^0.10.1",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.2"
+  }
+}

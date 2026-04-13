@@ -108,7 +108,69 @@ export function initDb(path = "noir.db"): Database.Database {
       timestamp TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (telegram_id) REFERENCES users(telegram_id)
     );
+
+    CREATE TABLE IF NOT EXISTS copy_strategies (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      follower_id TEXT NOT NULL,
+      leader_id TEXT NOT NULL,
+      mode TEXT NOT NULL DEFAULT 'proportional',
+      fixed_amount REAL,
+      max_per_trade REAL,
+      status TEXT NOT NULL DEFAULT 'active',
+      total_copied INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(follower_id, leader_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_copy_leader ON copy_strategies(leader_id, status);
+
+    CREATE TABLE IF NOT EXISTS launches (
+      launch_id TEXT PRIMARY KEY,
+      creator_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      ticker TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      image_url TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS launch_trades (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      launch_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      side TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      price_avg REAL NOT NULL,
+      tx_id TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_launch_trades_launch ON launch_trades(launch_id, created_at);
   `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS session_wallets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      shield_address TEXT NOT NULL,
+      session_address TEXT NOT NULL,
+      session_private_key TEXT NOT NULL,
+      funded_amount INTEGER DEFAULT 0,
+      active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
+  // ── OAuth migration (additive — no-op if columns already exist) ──
+  const cols = db.pragma("table_info(users)") as { name: string }[];
+  const colNames = new Set(cols.map((c) => c.name));
+  if (!colNames.has("oauth_provider")) {
+    db.exec("ALTER TABLE users ADD COLUMN oauth_provider TEXT");
+  }
+  if (!colNames.has("oauth_sub")) {
+    db.exec("ALTER TABLE users ADD COLUMN oauth_sub TEXT");
+  }
+  db.exec(
+    "CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_sub)",
+  );
 
   return db;
 }
@@ -125,6 +187,8 @@ export interface UserRow {
   aleo_address: string;
   encrypted_private_key: string;
   created_at: string;
+  oauth_provider: string | null;
+  oauth_sub: string | null;
 }
 
 export function upsertUser(
@@ -147,6 +211,29 @@ export function getUser(telegramId: string): UserRow | undefined {
   return getDb()
     .prepare("SELECT * FROM users WHERE telegram_id = ?")
     .get(telegramId) as UserRow | undefined;
+}
+
+export function updateUserOAuth(
+  telegramId: string,
+  provider: string,
+  sub: string,
+): void {
+  getDb()
+    .prepare(
+      "UPDATE users SET oauth_provider = ?, oauth_sub = ? WHERE telegram_id = ?",
+    )
+    .run(provider, sub, telegramId);
+}
+
+export function getUserByOAuth(
+  provider: string,
+  sub: string,
+): UserRow | undefined {
+  return getDb()
+    .prepare(
+      "SELECT * FROM users WHERE oauth_provider = ? AND oauth_sub = ?",
+    )
+    .get(provider, sub) as UserRow | undefined;
 }
 
 // ── Pending orders ──
@@ -183,6 +270,14 @@ export function getPendingOrders(): PendingOrderRow[] {
   return getDb()
     .prepare("SELECT * FROM pending_orders WHERE status = 'pending'")
     .all() as PendingOrderRow[];
+}
+
+export function getUserPendingOrders(telegramId: string): PendingOrderRow[] {
+  return getDb()
+    .prepare(
+      "SELECT * FROM pending_orders WHERE telegram_id = ? AND status = 'pending' ORDER BY created_at DESC",
+    )
+    .all(telegramId) as PendingOrderRow[];
 }
 
 export function updateOrderStatus(id: number, status: string): void {
@@ -513,4 +608,210 @@ export function getAllDecisions(telegramId: string): AgentDecisionRow[] {
       "SELECT * FROM agent_decisions WHERE telegram_id = ? ORDER BY timestamp ASC",
     )
     .all(telegramId) as AgentDecisionRow[];
+}
+
+// ── Copy strategies ──
+
+export interface CopyStrategyRow {
+  id: number;
+  follower_id: string;
+  leader_id: string;
+  mode: string;
+  fixed_amount: number | null;
+  max_per_trade: number | null;
+  status: string;
+  total_copied: number;
+  created_at: string;
+}
+
+export function createCopyStrategy(
+  followerId: string,
+  leaderId: string,
+  mode = "proportional",
+  fixedAmount?: number,
+  maxPerTrade?: number,
+): number {
+  const info = getDb()
+    .prepare(
+      `INSERT INTO copy_strategies (follower_id, leader_id, mode, fixed_amount, max_per_trade)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(follower_id, leader_id) DO UPDATE SET
+         mode = excluded.mode,
+         fixed_amount = excluded.fixed_amount,
+         max_per_trade = excluded.max_per_trade,
+         status = 'active'`,
+    )
+    .run(followerId, leaderId, mode, fixedAmount ?? null, maxPerTrade ?? null);
+  return Number(info.lastInsertRowid);
+}
+
+export function getFollowersOf(leaderId: string): CopyStrategyRow[] {
+  return getDb()
+    .prepare("SELECT * FROM copy_strategies WHERE leader_id = ? AND status = 'active'")
+    .all(leaderId) as CopyStrategyRow[];
+}
+
+export function getUserCopyStrategies(followerId: string): CopyStrategyRow[] {
+  return getDb()
+    .prepare("SELECT * FROM copy_strategies WHERE follower_id = ? AND status = 'active'")
+    .all(followerId) as CopyStrategyRow[];
+}
+
+export function cancelCopyStrategy(followerId: string, leaderId: string): void {
+  getDb()
+    .prepare("UPDATE copy_strategies SET status = 'cancelled' WHERE follower_id = ? AND leader_id = ?")
+    .run(followerId, leaderId);
+}
+
+export function cancelAllCopyStrategies(followerId: string): void {
+  getDb()
+    .prepare("UPDATE copy_strategies SET status = 'cancelled' WHERE follower_id = ? AND status = 'active'")
+    .run(followerId);
+}
+
+export function incrementCopyCount(id: number): void {
+  getDb()
+    .prepare("UPDATE copy_strategies SET total_copied = total_copied + 1 WHERE id = ?")
+    .run(id);
+}
+
+// ── Launches ──
+
+export interface LaunchRow {
+  launch_id: string;
+  creator_id: string;
+  name: string;
+  ticker: string;
+  description: string;
+  image_url: string;
+  created_at: string;
+}
+
+export function insertLaunch(
+  launchId: string,
+  creatorId: string,
+  name: string,
+  ticker: string,
+  description: string,
+): void {
+  getDb()
+    .prepare(
+      `INSERT INTO launches (launch_id, creator_id, name, ticker, description)
+       VALUES (?, ?, ?, ?, ?)`,
+    )
+    .run(launchId, creatorId, name, ticker, description);
+}
+
+export function getLaunch(launchId: string): LaunchRow | undefined {
+  return getDb()
+    .prepare("SELECT * FROM launches WHERE launch_id = ?")
+    .get(launchId) as LaunchRow | undefined;
+}
+
+export function getLaunchByTicker(ticker: string): LaunchRow | undefined {
+  return getDb()
+    .prepare("SELECT * FROM launches WHERE ticker = ? COLLATE NOCASE")
+    .get(ticker) as LaunchRow | undefined;
+}
+
+export function getAllLaunches(): LaunchRow[] {
+  return getDb()
+    .prepare("SELECT * FROM launches ORDER BY created_at DESC")
+    .all() as LaunchRow[];
+}
+
+// ── Launch trades ──
+
+export interface LaunchTradeRow {
+  id: number;
+  launch_id: string;
+  session_id: string;
+  side: string;
+  amount: number;
+  price_avg: number;
+  tx_id: string | null;
+  created_at: string;
+}
+
+export function insertLaunchTrade(
+  launchId: string,
+  sessionId: string,
+  side: string,
+  amount: number,
+  priceAvg: number,
+  txId?: string,
+): number {
+  const info = getDb()
+    .prepare(
+      `INSERT INTO launch_trades (launch_id, session_id, side, amount, price_avg, tx_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .run(launchId, sessionId, side, amount, priceAvg, txId ?? null);
+  return Number(info.lastInsertRowid);
+}
+
+export function getLaunchTrades(launchId: string, limit = 20): LaunchTradeRow[] {
+  return getDb()
+    .prepare(
+      "SELECT * FROM launch_trades WHERE launch_id = ? ORDER BY created_at DESC LIMIT ?",
+    )
+    .all(launchId, limit) as LaunchTradeRow[];
+}
+
+export function getLaunchTradeVolume(): number {
+  const row = getDb()
+    .prepare("SELECT COALESCE(SUM(amount * price_avg), 0) as vol FROM launch_trades")
+    .get() as { vol: number };
+  return row.vol;
+}
+
+// ── Session wallets ──
+
+export interface SessionWalletRow {
+  id: number;
+  user_id: string;
+  shield_address: string;
+  session_address: string;
+  session_private_key: string;
+  funded_amount: number;
+  active: number;
+  created_at: string;
+}
+
+export function insertSessionWallet(
+  userId: string,
+  shieldAddress: string,
+  sessionAddress: string,
+  sessionPrivateKey: string,
+): number {
+  // Deactivate any existing session wallet for this user
+  getDb()
+    .prepare("UPDATE session_wallets SET active = 0 WHERE user_id = ? AND active = 1")
+    .run(userId);
+
+  const info = getDb()
+    .prepare(
+      `INSERT INTO session_wallets (user_id, shield_address, session_address, session_private_key)
+       VALUES (?, ?, ?, ?)`,
+    )
+    .run(userId, shieldAddress, sessionAddress, sessionPrivateKey);
+  return Number(info.lastInsertRowid);
+}
+
+export function getSessionWalletRow(userId: string): SessionWalletRow | undefined {
+  return getDb()
+    .prepare("SELECT * FROM session_wallets WHERE user_id = ? AND active = 1")
+    .get(userId) as SessionWalletRow | undefined;
+}
+
+export function deactivateSessionWalletRow(userId: string): void {
+  getDb()
+    .prepare("UPDATE session_wallets SET active = 0 WHERE user_id = ? AND active = 1")
+    .run(userId);
+}
+
+export function updateSessionWalletFunded(userId: string, amount: number): void {
+  getDb()
+    .prepare("UPDATE session_wallets SET funded_amount = ? WHERE user_id = ? AND active = 1")
+    .run(amount, userId);
 }

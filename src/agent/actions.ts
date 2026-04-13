@@ -1,6 +1,7 @@
 import type { Account } from "@provablehq/sdk";
 import type { ParsedIntent } from "./parser.js";
 import { loadWallet } from "../aleo/wallet.js";
+import { getSessionWallet } from "../aleo/session-wallet.js";
 import { executeSwap, transferCredits } from "../aleo/trade.js";
 import { createProgramManager, getNetworkClient } from "../aleo/client.js";
 import { getPrice } from "../market/prices.js";
@@ -21,7 +22,21 @@ import {
   logDecision,
   getDecisionHistory,
   getAllDecisions,
+  getUser,
+  createCopyStrategy,
+  getUserCopyStrategies,
+  cancelCopyStrategy,
+  cancelAllCopyStrategies,
+  getLaunchByTicker,
 } from "../storage/db.js";
+import {
+  createLaunch as engineCreateLaunch,
+  buyLaunchToken,
+  sellLaunchToken,
+  listLaunches,
+  getBondingPrice,
+  fetchOnChainState,
+} from "../launchpad/engine.js";
 
 export interface ActionResult {
   message: string;
@@ -39,15 +54,7 @@ export async function handleIntent(
   if (!intent) {
     return {
       message:
-        "I didn't understand that. Try:\n" +
-        '• "buy 100 ALEO" / "sell 50 ALEO"\n' +
-        '• "send 10 ALEO to aleo1..."\n' +
-        '• "stack ALEO $50/week" / "protect at 20%"\n' +
-        '• "if ALEO drops 15%, sell half"\n' +
-        '• "market ALEO" — RSI, Bollinger Bands\n' +
-        '• "why" — explain last decisions\n' +
-        '• "export" — download trade history CSV\n' +
-        '• "portfolio" / "status"',
+        "I couldn't parse that command. Try 'portfolio', 'buy 100 ALEO', or 'status'.",
       needsConfirmation: false,
     };
   }
@@ -232,12 +239,13 @@ export async function handleIntent(
       const dcas = getUserDcaStrategies(telegramId);
       const prots = getUserProtections(telegramId);
       const alerts = getUserAlerts(telegramId);
+      const copies = getUserCopyStrategies(telegramId);
 
       let msg = "Active Strategies:\n\n";
 
       const rebals = getUserRebalances(telegramId);
 
-      if (dcas.length === 0 && prots.length === 0 && rebals.length === 0 && alerts.length === 0) {
+      if (dcas.length === 0 && prots.length === 0 && rebals.length === 0 && alerts.length === 0 && copies.length === 0) {
         msg += "No active strategies. Try:\n";
         msg += '• "stack ALEO $50/week" — recurring buys\n';
         msg += '• "protect at 20%" — stop-loss protection\n';
@@ -288,6 +296,15 @@ export async function handleIntent(
               ? `sell ${a.action_params ? JSON.parse(a.action_params).percent : 100}%`
               : a.action_type;
           msg += `  #${a.id}: ${a.token} ${condStr} → ${actionStr}\n`;
+        }
+      }
+
+      if (copies.length > 0) {
+        msg += "\nCopy Trading:\n";
+        for (const c of copies) {
+          msg += `  Following ${c.leader_id} (${c.mode})`;
+          if (c.max_per_trade != null) msg += ` max $${c.max_per_trade}/trade`;
+          msg += ` — ${c.total_copied} copied\n`;
         }
       }
 
@@ -485,6 +502,165 @@ export async function handleIntent(
       msg += `\n${tokens.length} tokens supported. Use "buy <amount> <TOKEN>" to trade.`;
       return { message: msg, needsConfirmation: false };
     }
+
+    case "copy": {
+      const leaderId = intent.leader;
+
+      // Prevent self-copy
+      if (leaderId === telegramId) {
+        return {
+          message: "You can't copy yourself.",
+          needsConfirmation: false,
+        };
+      }
+
+      // Check leader exists
+      const leader = getUser(leaderId);
+      if (!leader) {
+        return {
+          message: `User ${leaderId} not found. They need to be a Ghost user first.`,
+          needsConfirmation: false,
+        };
+      }
+
+      const id = createCopyStrategy(telegramId, leaderId);
+      return {
+        message:
+          `Copy trading activated (#${id}):\n` +
+          `Now mirroring trades from ${leaderId}.\n` +
+          `Mode: proportional (same amounts)\n` +
+          `All copied trades are private ZK records — the leader never knows.`,
+        needsConfirmation: false,
+      };
+    }
+
+    case "stopcopy": {
+      if (intent.leader) {
+        cancelCopyStrategy(telegramId, intent.leader);
+        return {
+          message: `Stopped copying ${intent.leader}.`,
+          needsConfirmation: false,
+        };
+      }
+
+      // Cancel all
+      const strategies = getUserCopyStrategies(telegramId);
+      if (strategies.length === 0) {
+        return {
+          message: "You're not copying anyone.",
+          needsConfirmation: false,
+        };
+      }
+
+      cancelAllCopyStrategies(telegramId);
+      return {
+        message: `Stopped copying ${strategies.length} trader(s).`,
+        needsConfirmation: false,
+      };
+    }
+
+    case "copies": {
+      const strategies = getUserCopyStrategies(telegramId);
+      if (strategies.length === 0) {
+        return {
+          message:
+            'You\'re not copying anyone yet.\n' +
+            'Use "copy @username" to start mirroring a trader.',
+          needsConfirmation: false,
+        };
+      }
+
+      let msg = "Copy Trading:\n\n";
+      for (const s of strategies) {
+        msg += `  ${s.leader_id} — ${s.mode}`;
+        if (s.fixed_amount != null) msg += ` ($${s.fixed_amount})`;
+        if (s.max_per_trade != null) msg += ` max $${s.max_per_trade}/trade`;
+        msg += ` — ${s.total_copied} trades copied`;
+        msg += ` — since ${s.created_at}\n`;
+      }
+      msg += `\nUse "stop copy @username" or "stop copy" to cancel.`;
+      return { message: msg, needsConfirmation: false };
+    }
+
+    // ── Launchpad intents ──
+
+    case "launch": {
+      const result = await engineCreateLaunch(
+        telegramId,
+        intent.name,
+        intent.ticker,
+        intent.description,
+      );
+      return { message: result.message, needsConfirmation: false };
+    }
+
+    case "launchbuy": {
+      const launch = getLaunchByTicker(intent.ticker);
+      if (!launch) {
+        return { message: `Launch $${intent.ticker} not found.`, needsConfirmation: false };
+      }
+      const onChain = await fetchOnChainState(launch.launch_id);
+      const cost = intent.amount * getBondingPrice(onChain.supplySold);
+      return {
+        message:
+          `BUY ${intent.amount} $${intent.ticker}\n` +
+          `Est. cost: ${cost.toFixed(0)} microcredits\n` +
+          `Current price: ${getBondingPrice(onChain.supplySold).toFixed(2)}/token\n` +
+          `Confirm?`,
+        needsConfirmation: true,
+        confirmData: JSON.stringify({
+          type: "launchbuy",
+          launchId: launch.launch_id,
+          ticker: intent.ticker,
+          amount: intent.amount,
+        }),
+      };
+    }
+
+    case "launchsell": {
+      const launch = getLaunchByTicker(intent.ticker);
+      if (!launch) {
+        return { message: `Launch $${intent.ticker} not found.`, needsConfirmation: false };
+      }
+      const onChain = await fetchOnChainState(launch.launch_id);
+      const refund = intent.amount * getBondingPrice(onChain.supplySold);
+      return {
+        message:
+          `SELL ${intent.amount} $${intent.ticker}\n` +
+          `Est. refund: ${refund.toFixed(0)} microcredits\n` +
+          `Current price: ${getBondingPrice(onChain.supplySold).toFixed(2)}/token\n` +
+          `Confirm?`,
+        needsConfirmation: true,
+        confirmData: JSON.stringify({
+          type: "launchsell",
+          launchId: launch.launch_id,
+          ticker: intent.ticker,
+          amount: intent.amount,
+        }),
+      };
+    }
+
+    case "launchlist": {
+      const launches = await listLaunches();
+      if (launches.length === 0) {
+        return {
+          message:
+            "No launches yet.\n" +
+            'Use "launch <name> <TICKER> <description>" to create one.',
+          needsConfirmation: false,
+        };
+      }
+
+      let msg = "Active Launches:\n\n";
+      for (const l of launches) {
+        const price = getBondingPrice(l.supply_sold);
+        const pct = ((l.supply_sold / 1_000_000) * 100).toFixed(1);
+        const status = l.graduated ? "GRADUATED" : `${pct}% filled`;
+        msg += `  $${l.ticker} — ${l.name}\n`;
+        msg += `    Price: ${price.toFixed(2)} | Supply: ${l.supply_sold.toLocaleString()} | ${status}\n`;
+      }
+      return { message: msg, needsConfirmation: false };
+    }
   }
 }
 
@@ -497,7 +673,8 @@ export async function executeConfirmedTrade(
 ): Promise<string> {
   const data = JSON.parse(confirmData) as Record<string, unknown>;
 
-  const account = loadWallet(telegramId);
+  // Prefer session wallet (for Shield Wallet users), fallback to server wallet
+  const account = getSessionWallet(telegramId) ?? loadWallet(telegramId);
   if (!account) {
     return "Wallet not found. Use /start to create one.";
   }
@@ -506,6 +683,24 @@ export async function executeConfirmedTrade(
     const result = await transferCredits(
       account,
       data.recipient as string,
+      data.amount as number,
+    );
+    return result.message;
+  }
+
+  if (data.type === "launchbuy") {
+    const result = await buyLaunchToken(
+      telegramId,
+      data.launchId as string,
+      data.amount as number,
+    );
+    return result.message;
+  }
+
+  if (data.type === "launchsell") {
+    const result = await sellLaunchToken(
+      telegramId,
+      data.launchId as string,
       data.amount as number,
     );
     return result.message;

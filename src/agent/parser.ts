@@ -1,8 +1,18 @@
 /**
- * Intent parser — two modes:
- * 1. LLM mode: POST to an OpenAI-compatible endpoint with function-calling
- * 2. Regex fallback: simple pattern matching for "buy 100 ALEO" style commands
+ * Intent parser — three modes:
+ * 1. Claude AI: Anthropic tool calling with full 21-intent coverage + conversation
+ * 2. Legacy LLM: POST to an OpenAI-compatible endpoint (backward compat)
+ * 3. Regex fallback: simple pattern matching for "buy 100 ALEO" style commands
  */
+
+import { callClaude, type AgentContext, type AiResult } from "./ai.js";
+
+export type { AgentContext } from "./ai.js";
+
+export type ParseResult =
+  | { type: "tool"; intent: ParsedIntent }
+  | { type: "conversation"; message: string }
+  | null;
 
 export interface TradeIntent {
   action: "buy" | "sell";
@@ -83,6 +93,43 @@ export interface TokensIntent {
   action: "tokens";
 }
 
+export interface CopyIntent {
+  action: "copy";
+  leader: string;
+}
+
+export interface StopCopyIntent {
+  action: "stopcopy";
+  leader?: string;
+}
+
+export interface CopiesIntent {
+  action: "copies";
+}
+
+export interface LaunchCreateIntent {
+  action: "launch";
+  name: string;
+  ticker: string;
+  description: string;
+}
+
+export interface LaunchBuyIntent {
+  action: "launchbuy";
+  ticker: string;
+  amount: number;
+}
+
+export interface LaunchSellIntent {
+  action: "launchsell";
+  ticker: string;
+  amount: number;
+}
+
+export interface LaunchListIntent {
+  action: "launchlist";
+}
+
 export type ParsedIntent =
   | TradeIntent
   | LimitIntent
@@ -99,6 +146,13 @@ export type ParsedIntent =
   | ExportIntent
   | MarketIntent
   | TokensIntent
+  | CopyIntent
+  | StopCopyIntent
+  | CopiesIntent
+  | LaunchCreateIntent
+  | LaunchBuyIntent
+  | LaunchSellIntent
+  | LaunchListIntent
   | null;
 
 // ── Regex fallback parser ──
@@ -137,6 +191,15 @@ const EXPORT_RE = /\b(?:export|download|csv)\s*(?:history|trades|decisions)?/i;
 const MARKET_RE = /\b(?:market|analysis|analyze|indicators?|rsi|bollinger)\s+(\w+)/i;
 const MARKET_SHORT_RE = /\b(?:market|analysis|indicators?)\b/i;
 const TOKENS_RE = /\b(?:tokens|coins|what\s+can\s+i\s+trade|supported\s+tokens|available\s+tokens)\b/i;
+const COPIES_RE = /\b(?:copies|copy\s*list|who\s+am\s+i\s+(?:copy|follow)ing|following)\b/i;
+const STOP_COPY_RE = /\b(?:stop\s+cop(?:y|ying)|unfollow)\s*@?(\w+)?/i;
+const COPY_RE = /\b(?:copy|follow|mirror)\s+(?:trader\s+)?@?(\w+)/i;
+// Launchpad intents
+// "launch MyToken MTKN "A fun token"" or "launch MyToken MTKN description here"
+const LAUNCH_CREATE_RE = /\blaunch\s+(\S+)\s+([A-Za-z]{1,6})(?:\s+"([^"]+)"|\s+(.+))?$/i;
+const LAUNCH_BUY_RE = /\blaunchbuy\s+(\w+)\s+(\d+(?:\.\d+)?)/i;
+const LAUNCH_SELL_RE = /\blaunchsell\s+(\w+)\s+(\d+(?:\.\d+)?)/i;
+const LAUNCH_LIST_RE = /\b(?:launchlist|launches|launchpad)\b/i;
 
 export function parseWithRegex(text: string): ParsedIntent {
   // Check limit orders first (more specific)
@@ -201,6 +264,23 @@ export function parseWithRegex(text: string): ParsedIntent {
       action: "protect",
       threshold: parseFloat(protectMatch[1]!),
     };
+  }
+
+  if (COPIES_RE.test(text)) {
+    return { action: "copies" };
+  }
+
+  const stopCopyMatch = text.match(STOP_COPY_RE);
+  if (stopCopyMatch) {
+    return {
+      action: "stopcopy",
+      leader: stopCopyMatch[1] || undefined,
+    };
+  }
+
+  const copyMatch = text.match(COPY_RE);
+  if (copyMatch) {
+    return { action: "copy", leader: copyMatch[1]! };
   }
 
   if (STATUS_RE.test(text)) {
@@ -291,6 +371,40 @@ export function parseWithRegex(text: string): ParsedIntent {
 
   if (MARKET_SHORT_RE.test(text)) {
     return { action: "market", token: "ALEO" };
+  }
+
+  // ── Launchpad intents ──
+
+  if (LAUNCH_LIST_RE.test(text)) {
+    return { action: "launchlist" };
+  }
+
+  const launchBuyMatch = text.match(LAUNCH_BUY_RE);
+  if (launchBuyMatch) {
+    return {
+      action: "launchbuy",
+      ticker: launchBuyMatch[1]!.toUpperCase(),
+      amount: parseFloat(launchBuyMatch[2]!),
+    };
+  }
+
+  const launchSellMatch = text.match(LAUNCH_SELL_RE);
+  if (launchSellMatch) {
+    return {
+      action: "launchsell",
+      ticker: launchSellMatch[1]!.toUpperCase(),
+      amount: parseFloat(launchSellMatch[2]!),
+    };
+  }
+
+  const launchCreateMatch = text.match(LAUNCH_CREATE_RE);
+  if (launchCreateMatch) {
+    return {
+      action: "launch",
+      name: launchCreateMatch[1]!,
+      ticker: launchCreateMatch[2]!.toUpperCase(),
+      description: launchCreateMatch[3] || launchCreateMatch[4] || "",
+    };
   }
 
   return null;
@@ -430,15 +544,29 @@ export async function parseWithLLM(
 }
 
 /**
- * Parse user message — tries LLM first, falls back to regex.
+ * Parse user message — tries Claude AI first, then legacy LLM, then regex.
+ * Returns a ParseResult that can be a tool call, conversational response, or null.
  */
 export async function parseIntent(
   text: string,
-  llmUrl?: string,
-): Promise<ParsedIntent> {
-  if (llmUrl) {
-    const llmResult = await parseWithLLM(text, llmUrl);
-    if (llmResult) return llmResult;
+  context?: AgentContext,
+): Promise<ParseResult> {
+  // 1. Try Claude if API key configured
+  if (process.env.ANTHROPIC_API_KEY && context) {
+    const aiResult = await callClaude(text, context);
+    if (aiResult) return aiResult;
   }
-  return parseWithRegex(text);
+
+  // 2. Try legacy LLM_URL (OpenAI-compatible, kept for backward compat)
+  if (process.env.LLM_URL) {
+    const llmResult = await parseWithLLM(text, process.env.LLM_URL);
+    if (llmResult) return { type: "tool", intent: llmResult };
+  }
+
+  // 3. Regex fallback
+  const regex = parseWithRegex(text);
+  if (regex) return { type: "tool", intent: regex };
+
+  // 4. No match
+  return null;
 }

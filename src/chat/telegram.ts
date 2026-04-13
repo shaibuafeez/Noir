@@ -57,8 +57,23 @@ export function createBot(token: string, llmUrl?: string): Bot {
       return;
     }
 
-    const intent = await parseIntent(text, llmUrl);
-    const result = await handleIntent(telegramId, intent);
+    const parseResult = await parseIntent(text, {
+      sessionId: telegramId,
+      walletAddress: getAddress(telegramId),
+      sessionType: "telegram",
+    });
+
+    if (!parseResult) {
+      await ctx.reply("I couldn't parse that command. Try 'portfolio', 'buy 100 ALEO', or 'status'.");
+      return;
+    }
+
+    if (parseResult.type === "conversation") {
+      await ctx.reply(parseResult.message);
+      return;
+    }
+
+    const result = await handleIntent(telegramId, parseResult.intent);
 
     if (result.needsConfirmation && result.confirmData) {
       // Store confirmation data and show confirm/cancel buttons

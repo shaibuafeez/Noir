@@ -3,6 +3,7 @@ import { createProgramManager } from "./client.js";
 import { getNetworkConfig, getNetworkLabel } from "./network.js";
 import { tokenToField } from "../market/tokens.js";
 import { recordTrade } from "../storage/db.js";
+import { onTradeExecuted } from "../market/copy.js";
 
 const PROGRAM_ID = "ghost_trade_v2.aleo";
 const CREDITS_PROGRAM = "credits.aleo";
@@ -59,6 +60,7 @@ export async function executeSwap(
       const hash = typeof txHash === "string" ? txHash : String(txHash);
       console.log("[trade] SELL SUCCESS — tx:", hash);
       recordTrade(telegramId, action, tokenSymbol, amount, price, hash);
+      onTradeExecuted(telegramId, action, tokenSymbol, amount, price, hash);
 
       return {
         txHash: hash,
@@ -74,6 +76,7 @@ export async function executeSwap(
       // so the trade is at least tracked
       const fallbackHash = `local_${Date.now().toString(36)}`;
       recordTrade(telegramId, action, tokenSymbol, amount, price, fallbackHash);
+      onTradeExecuted(telegramId, action, tokenSymbol, amount, price, fallbackHash);
 
       return {
         txHash: fallbackHash,
@@ -106,6 +109,7 @@ export async function executeSwap(
     const hash = typeof txHash === "string" ? txHash : String(txHash);
     console.log("[trade] BUY SUCCESS — tx:", hash);
     recordTrade(telegramId, action, tokenSymbol, amount, price, hash);
+    onTradeExecuted(telegramId, action, tokenSymbol, amount, price, hash);
 
     return {
       txHash: hash,
@@ -118,6 +122,7 @@ export async function executeSwap(
     console.error("[trade] BUY FAILED:", err);
     const fallbackHash = `local_${Date.now().toString(36)}`;
     recordTrade(telegramId, action, tokenSymbol, amount, price, fallbackHash);
+    onTradeExecuted(telegramId, action, tokenSymbol, amount, price, fallbackHash);
 
     return {
       txHash: fallbackHash,
