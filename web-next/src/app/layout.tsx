@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "Noir — Private Trading Agent on Aleo",
   description:
     "Trade privately on Aleo. Your portfolio is a zero-knowledge secret. AI-powered trading agent with copy trading, DCA, limit orders, and alerts.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

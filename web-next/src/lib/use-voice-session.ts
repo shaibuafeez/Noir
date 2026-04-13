@@ -10,7 +10,8 @@ function apiBase(): string {
   if (window.location.port === "3002") {
     return `${window.location.protocol}//${window.location.hostname}:3000`;
   }
-  return "";
+  if (window.location.port === "3000") return "";
+  return process.env.NEXT_PUBLIC_API_URL || "https://noir-backend-production-d2b0.up.railway.app";
 }
 
 // ── Audio helpers ──
