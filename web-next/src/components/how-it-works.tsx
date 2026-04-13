@@ -122,7 +122,7 @@ function DesktopGallery() {
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     i === active
                       ? "w-6 bg-primary"
-                      : "w-1.5 bg-muted-foreground/30"
+                      : "w-1.5 bg-muted-foreground/50"
                   }`}
                 />
               ))}
@@ -167,10 +167,10 @@ function ScrollCard({
   return (
     <motion.div className="absolute inset-0" style={{ y, scale, opacity }}>
       <GlassCard className="flex h-full flex-col items-center justify-center p-10 text-center">
-        <div className="mb-2 font-mono text-xs tracking-widest text-primary/60">
+        <div className="mb-2 font-mono text-xs tracking-widest text-primary">
           {step.n}
         </div>
-        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/8 ring-1 ring-primary/15">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/25">
           <Icon className="h-7 w-7 text-primary" />
         </div>
         <h3 className="text-xl font-semibold">{step.title}</h3>
@@ -191,10 +191,10 @@ function MobileGallery() {
         return (
           <FadeIn key={step.n}>
             <GlassCard className="p-6" hoverGlow>
-              <div className="font-mono text-xs tracking-widest text-primary/60">
+              <div className="font-mono text-xs tracking-widest text-primary">
                 {step.n}
               </div>
-              <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15">
+              <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/25">
                 <Icon className="h-5 w-5 text-primary" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
@@ -214,7 +214,7 @@ export function HowItWorks() {
   const isMobile = useIsMobile();
 
   return (
-    <section id="how" className="relative z-10 border-t border-border/30">
+    <section id="how" className="relative z-10 border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-28">
         <FadeIn className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">

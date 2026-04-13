@@ -10,6 +10,7 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+  getDb,
   getUser,
   getTradeHistory,
   getUserDcaStrategies,
@@ -26,6 +27,7 @@ import {
   createProtection,
   createRebalanceStrategy,
   createCopyStrategy,
+  getLaunchTradeVolume,
   type TradeHistoryRow,
 } from "../storage/db.js";
 import {
@@ -225,6 +227,24 @@ export async function handleApiRequest(
           }),
           true
         );
+      }
+
+      case "/api/stats": {
+        const d = getDb();
+        const tradeCount = d.prepare("SELECT COUNT(*) as c FROM trade_history").get() as { c: number };
+        const tradeVolume = d.prepare(
+          "SELECT COALESCE(SUM(amount * COALESCE(price, 0)), 0) as vol FROM trade_history",
+        ).get() as { vol: number };
+        const launchVol = getLaunchTradeVolume();
+        const launchCount = d.prepare("SELECT COUNT(*) as c FROM launches").get() as { c: number };
+        const userCount = d.prepare("SELECT COUNT(*) as c FROM users").get() as { c: number };
+        return ok(res, {
+          trades: tradeCount.c,
+          volume: tradeVolume.vol + launchVol,
+          launches: launchCount.c,
+          users: userCount.c,
+          privacyPct: 100,
+        }), true;
       }
 
       case "/api/holdings": {

@@ -289,6 +289,7 @@ export const api = {
     get<{ address: string | null; balanceUsdcx: number }>(
       `/api/balance/usdcx?sessionId=${encodeURIComponent(sessionId)}`,
     ),
+  stats: () => get<{ trades: number; volume: number; launches: number; users: number; privacyPct: number }>("/api/stats"),
   market: () => get<MarketToken[]>("/api/market"),
   marketHistory: (token: string, limit = 48) =>
     get<{ label: string; value: number }[]>(

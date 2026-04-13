@@ -33,7 +33,7 @@ import {
   TiltCard,
   motion,
 } from "@/components/motion";
-import { HowItWorks } from "@/components/how-it-works";
+
 import { getGoogleSignInUrl } from "@/lib/auth";
 
 /* ─── useIsMobile ─── */
@@ -235,6 +235,7 @@ function FloatingOrbs() {
 function StatsTicker() {
   const ref = React.useRef<HTMLDivElement>(null);
   const [inView, setInView] = React.useState(false);
+  const [stats, setStats] = React.useState({ trades: 0, volume: 0, privacyPct: 100 });
 
   React.useEffect(() => {
     const el = ref.current;
@@ -247,11 +248,34 @@ function StatsTicker() {
     return () => obs.disconnect();
   }, []);
 
+  React.useEffect(() => {
+    const base =
+      typeof window !== "undefined" && window.location.port === "3002"
+        ? `${window.location.protocol}//${window.location.hostname}:3000`
+        : typeof window !== "undefined" && window.location.port === "3000"
+          ? ""
+          : process.env.NEXT_PUBLIC_API_URL || "https://noir-backend-production-d2b0.up.railway.app";
+    fetch(`${base}/api/stats`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok !== false && d.data) setStats({ trades: d.data.trades, volume: d.data.volume, privacyPct: d.data.privacyPct });
+        else if (d.ok !== false) setStats({ trades: d.trades ?? 0, volume: d.volume ?? 0, privacyPct: d.privacyPct ?? 100 });
+      })
+      .catch(() => {});
+  }, []);
+
+  /** Format volume as e.g. "$1.2M" or "$45K" or "$123" */
+  function fmtVolume(v: number): string {
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+    return Math.round(v).toLocaleString();
+  }
+
   return (
     <div ref={ref} className="mt-24 flex flex-wrap items-center justify-center gap-x-16 gap-y-6 font-mono text-sm tracking-widest text-muted-foreground/60 uppercase">
       <div className="flex flex-col items-center gap-1">
         <AnimatedNumber
-          value={inView ? 1234 : 0}
+          value={inView ? stats.trades : 0}
           format={(n) => Math.round(n).toLocaleString()}
           className="text-xl font-medium text-foreground tabular-nums tracking-tight"
         />
@@ -261,8 +285,8 @@ function StatsTicker() {
         <div className="flex items-center">
           <span className="text-xl font-medium text-foreground tracking-tight">$</span>
           <AnimatedNumber
-            value={inView ? 45 : 0}
-            format={(n) => `${Math.round(n)}M`}
+            value={inView ? stats.volume : 0}
+            format={(n) => fmtVolume(n)}
             className="text-xl font-medium text-foreground tabular-nums tracking-tight"
           />
         </div>
@@ -270,7 +294,7 @@ function StatsTicker() {
       </div>
       <div className="flex flex-col items-center gap-1">
         <AnimatedNumber
-          value={inView ? 100 : 0}
+          value={inView ? stats.privacyPct : 0}
           format={(n) => `${Math.round(n)}%`}
           className="text-xl font-medium text-foreground tabular-nums tracking-tight"
         />
@@ -535,8 +559,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <HowItWorks />
 
       {/* ─── CTA ─── */}
       <section className="relative z-10 border-t border-border/30">
