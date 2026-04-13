@@ -1,4 +1,5 @@
 import test_usdcx_stablecoin.aleo;
+import test_usad_stablecoin.aleo;
 
 program ghost_trade_v3.aleo {
 
@@ -236,6 +237,46 @@ program ghost_trade_v3.aleo {
              test_usdcx_stablecoin.aleo::Token,
              Final) = test_usdcx_stablecoin.aleo::transfer_private(
             seller, usdcx_cost, usdcx_token, freeze_proofs,
+        );
+
+        let holding: Holding = Holding {
+            owner: self.caller,
+            token,
+            amount,
+        };
+
+        return (holding, compliance, change, recipient, final {
+            fut.run();
+        });
+    }
+
+    // Buy tokens by paying USAD (test_usad_stablecoin.aleo) to a seller.
+    // Uses transfer_private for full privacy — identical to USDCx flow.
+    fn buy_with_usad(
+        token: field,
+        amount: u64,
+        usad_cost: u128,
+        seller: address,
+        usad_token: test_usad_stablecoin.aleo::Token,
+        freeze_proofs: [test_usad_stablecoin.aleo::MerkleProof; 2u32],
+    ) -> (
+        Holding,
+        test_usad_stablecoin.aleo::ComplianceRecord,
+        test_usad_stablecoin.aleo::Token,
+        test_usad_stablecoin.aleo::Token,
+        Final,
+    ) {
+        // Safety: max trade size
+        assert(amount <= MAX_TRADE_AMOUNT);
+        assert(usad_cost > 0u128);
+
+        // Transfer USAD to seller privately — no public mapping leaks
+        let (compliance, change, recipient, fut):
+            (test_usad_stablecoin.aleo::ComplianceRecord,
+             test_usad_stablecoin.aleo::Token,
+             test_usad_stablecoin.aleo::Token,
+             Final) = test_usad_stablecoin.aleo::transfer_private(
+            seller, usad_cost, usad_token, freeze_proofs,
         );
 
         let holding: Holding = Holding {

@@ -91,12 +91,13 @@ is guaranteed by the protocol; custody is the trust variable.
 
 All three Leo programs compile on Leo 4.0.1 and are deployed on Aleo testnet.
 
-### ghost_trade_v3.aleo (9 transitions)
+### ghost_trade_v3.aleo (10 transitions)
 - Admin/minter access control (hardcoded admin address)
 - Overflow guards on all arithmetic (Leo enforces by default)
 - Minimum output on swaps (slippage protection)
-- Cross-program USDCx buy uses `transfer_private` — both buyer/seller addresses
-  and payment amount are hidden in encrypted records (no public mapping leaks)
+- Cross-program **USDCx** and **USAD** buy via `transfer_private` — both
+  buyer/seller addresses and payment amount are hidden in encrypted records
+- Dual stablecoin support: `buy_with_usdcx` + `buy_with_usad`
 
 ### ghost_launchpad_v1.aleo (5 transitions)
 - Treasury accounting — all funds tracked in on-chain mappings
