@@ -26,7 +26,7 @@ export default function MarketPage() {
     null,
   );
 
-  const market = useApi(() => api.market(), []);
+  const market = useApi(() => api.market(), [], true, 10_000);
   const tokens = market.data ?? [];
 
   React.useEffect(() => {

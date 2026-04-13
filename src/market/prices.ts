@@ -1,9 +1,11 @@
 /**
- * Simple price fetcher using CoinGecko free API.
- * Caches prices for 60 seconds.
+ * Dual-source price fetcher: Pyth Network primary (BTC/ETH/SOL/DOGE),
+ * CoinGecko fallback + ALEO. Caches prices for 60 seconds (CoinGecko)
+ * or 10 seconds (Pyth, handled in pyth.ts).
  */
 
 import { getToken } from "./tokens.js";
+import { getPythPrice } from "./pyth.js";
 
 interface CacheEntry {
   price: number;
@@ -13,25 +15,43 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 60_000;
 
-export async function getPrice(symbol: string): Promise<number> {
-  const upper = symbol.toUpperCase();
+export interface PriceResult {
+  price: number;
+  confidence?: number;
+  source: "pyth" | "coingecko" | "hardcoded";
+}
 
+export async function getPrice(symbol: string): Promise<number> {
+  const result = await getPriceWithConfidence(symbol);
+  return result.price;
+}
+
+export async function getPriceWithConfidence(
+  symbol: string,
+): Promise<PriceResult> {
+  const upper = symbol.toUpperCase();
   const token = getToken(upper);
 
   // Stablecoins
-  if (token?.isStablecoin) return 1.0;
+  if (token?.isStablecoin) return { price: 1.0, source: "hardcoded" };
 
-  // Check cache
+  // Try Pyth first if feed exists
+  if (token?.pythFeedId) {
+    const pyth = await getPythPrice(token.pythFeedId);
+    if (pyth && pyth.price > 0) {
+      cache.set(upper, { price: pyth.price, fetchedAt: Date.now() });
+      return { price: pyth.price, confidence: pyth.confidence, source: "pyth" };
+    }
+  }
+
+  // Check CoinGecko cache
   const cached = cache.get(upper);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return cached.price;
+    return { price: cached.price, source: "coingecko" };
   }
 
   const cgId = token?.coingeckoId;
-  if (!cgId) {
-    // Unknown token — return 0
-    return 0;
-  }
+  if (!cgId) return { price: 0, source: "coingecko" };
 
   try {
     const res = await fetch(
@@ -44,10 +64,10 @@ export async function getPrice(symbol: string): Promise<number> {
     const price = data[cgId]?.usd ?? 0;
 
     cache.set(upper, { price, fetchedAt: Date.now() });
-    return price;
+    return { price, source: "coingecko" };
   } catch {
     // Return cached value if available, even if stale
-    if (cached) return cached.price;
-    return 0;
+    if (cached) return { price: cached.price, source: "coingecko" };
+    return { price: 0, source: "coingecko" };
   }
 }

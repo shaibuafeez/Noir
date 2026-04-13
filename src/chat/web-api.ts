@@ -37,7 +37,7 @@ import {
   deactivateSessionWallet,
 } from "../aleo/session-wallet.js";
 import { createProgramManager } from "../aleo/client.js";
-import { getPrice } from "../market/prices.js";
+import { getPrice, getPriceWithConfidence } from "../market/prices.js";
 import {
   calculateRSI,
   calculateBollinger,
@@ -296,7 +296,7 @@ export async function handleApiRequest(
         const tokens = getAllTokens();
         const out: unknown[] = [];
         for (const t of tokens) {
-          const price = await getPrice(t.symbol);
+          const priceResult = await getPriceWithConfidence(t.symbol);
           const rsi = calculateRSI(t.symbol);
           const bollinger = calculateBollinger(t.symbol);
           const change24h = getPriceChange(t.symbol, 288);
@@ -304,7 +304,9 @@ export async function handleApiRequest(
           out.push({
             symbol: t.symbol,
             name: t.symbol, // no full-name registry yet — use symbol
-            price,
+            price: priceResult.price,
+            confidence: priceResult.confidence ?? null,
+            priceSource: priceResult.source,
             change24h: change24h?.changePercent ?? 0,
             change1h: change1h?.changePercent ?? 0,
             rsi: rsi?.value ?? null,
@@ -355,6 +357,30 @@ export async function handleApiRequest(
           return ok(res, { address: user.aleo_address, balanceCredits: credits }), true;
         } catch {
           return ok(res, { address: user.aleo_address, balanceCredits: 0 }), true;
+        }
+      }
+
+      case "/api/balance/usdcx": {
+        const sessionId = getSessionId(url);
+        if (!sessionId) return err(res, 400, "sessionId required"), true;
+        const user = getUser(sessionId);
+        if (!user) return ok(res, { address: null, balanceUsdcx: 0 }), true;
+        const network = process.env.ALEO_NETWORK || "testnet";
+        const explorerBase = `https://api.explorer.provable.com/v1/${network}`;
+        try {
+          const resp = await fetch(
+            `${explorerBase}/program/test_usdcx_stablecoin.aleo/mapping/account/${user.aleo_address}`,
+          );
+          if (!resp.ok) {
+            return ok(res, { address: user.aleo_address, balanceUsdcx: 0 }), true;
+          }
+          const raw = await resp.text();
+          // Response is like "1000000u128" — strip quotes, parseInt stops at 'u'
+          const microUsdcx = parseInt(raw.replace(/"/g, "").trim(), 10) || 0;
+          const usdcx = microUsdcx / 1_000_000;
+          return ok(res, { address: user.aleo_address, balanceUsdcx: usdcx }), true;
+        } catch {
+          return ok(res, { address: user.aleo_address, balanceUsdcx: 0 }), true;
         }
       }
 

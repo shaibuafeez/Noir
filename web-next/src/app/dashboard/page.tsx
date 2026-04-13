@@ -13,6 +13,8 @@ import {
   Shield,
   Scale,
   Users,
+  DollarSign,
+  Wallet,
 } from "lucide-react";
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +41,7 @@ export default function DashboardPage() {
     () => api.portfolio(sessionId!),
     [sessionId],
     Boolean(sessionId),
+    30_000,
   );
   const strategies = useApi(
     () => api.strategies(sessionId!),
@@ -47,6 +50,16 @@ export default function DashboardPage() {
   );
   const trades = useApi(
     () => api.trades(sessionId!),
+    [sessionId],
+    Boolean(sessionId),
+  );
+  const balanceAleo = useApi(
+    () => api.balance(sessionId!),
+    [sessionId],
+    Boolean(sessionId),
+  );
+  const balanceUsdcx = useApi(
+    () => api.balanceUsdcx(sessionId!),
     [sessionId],
     Boolean(sessionId),
   );
@@ -88,7 +101,7 @@ export default function DashboardPage() {
       </FadeIn>
 
       {/* KPI cards */}
-      <StaggerContainer className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <StaggerContainer className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StaggerItem>
           <KpiCard
             label="Portfolio Value"
@@ -98,6 +111,28 @@ export default function DashboardPage() {
             change={change24h}
             icon={TrendingUp}
             loading={portfolio.loading}
+          />
+        </StaggerItem>
+        <StaggerItem>
+          <KpiCard
+            label="ALEO Balance"
+            value={balanceAleo.data?.balanceCredits ?? 0}
+            masked={privacyMode}
+            formatter={(n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+            subtext="on-chain"
+            icon={Wallet}
+            loading={balanceAleo.loading}
+          />
+        </StaggerItem>
+        <StaggerItem>
+          <KpiCard
+            label="USDCx Balance"
+            value={balanceUsdcx.data?.balanceUsdcx ?? 0}
+            masked={privacyMode}
+            formatter={(n) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtext="stablecoin"
+            icon={DollarSign}
+            loading={balanceUsdcx.loading}
           />
         </StaggerItem>
         <StaggerItem>

@@ -243,6 +243,10 @@ export const api = {
     get<{ address: string | null; balanceCredits: number }>(
       `/api/balance?sessionId=${encodeURIComponent(sessionId)}`,
     ),
+  balanceUsdcx: (sessionId: string) =>
+    get<{ address: string | null; balanceUsdcx: number }>(
+      `/api/balance/usdcx?sessionId=${encodeURIComponent(sessionId)}`,
+    ),
   market: () => get<MarketToken[]>("/api/market"),
   marketHistory: (token: string, limit = 48) =>
     get<{ label: string; value: number }[]>(
@@ -306,6 +310,7 @@ export function useApi<T>(
   fetcher: () => Promise<T>,
   deps: React.DependencyList,
   enabled: boolean = true,
+  pollMs?: number,
 ): AsyncState<T> {
   const [data, setData] = React.useState<T | null>(null);
   const [loading, setLoading] = React.useState(enabled);
@@ -338,6 +343,18 @@ export function useApi<T>(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick, enabled]);
+
+  // Polling: silently refresh data at interval without setting loading state
+  React.useEffect(() => {
+    if (!enabled || !pollMs) return;
+    const id = setInterval(() => {
+      fetcher()
+        .then((d) => setData(d))
+        .catch(() => {}); // silent — stale data is fine
+    }, pollMs);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...deps, enabled, pollMs]);
 
   const reload = React.useCallback(() => setTick((t) => t + 1), []);
   return { data, loading, error, reload };
