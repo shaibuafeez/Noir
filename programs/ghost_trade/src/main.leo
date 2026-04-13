@@ -208,19 +208,35 @@ program ghost_trade_v3.aleo {
     }
 
     // Buy tokens by paying USDCx (test_usdcx_stablecoin.aleo) to a seller.
-    // USDCx uses u128 amounts (6 decimals, same as USDC).
+    // Uses transfer_private for full privacy — both buyer/seller addresses
+    // and payment amount are hidden in encrypted records.
+    // Returns: (Holding, ComplianceRecord, Token change, Token recipient, Final)
     fn buy_with_usdcx(
         token: field,
         amount: u64,
         usdcx_cost: u128,
         seller: address,
-    ) -> (Holding, Final) {
+        usdcx_token: test_usdcx_stablecoin.aleo::Token,
+        freeze_proofs: [test_usdcx_stablecoin.aleo::MerkleProof; 2u32],
+    ) -> (
+        Holding,
+        test_usdcx_stablecoin.aleo::ComplianceRecord,
+        test_usdcx_stablecoin.aleo::Token,
+        test_usdcx_stablecoin.aleo::Token,
+        Final,
+    ) {
         // Safety: max trade size
         assert(amount <= MAX_TRADE_AMOUNT);
         assert(usdcx_cost > 0u128);
 
-        // Transfer USDCx to seller via the official stablecoin program
-        let transfer: Final = test_usdcx_stablecoin.aleo::transfer_public(seller, usdcx_cost);
+        // Transfer USDCx to seller privately — no public mapping leaks
+        let (compliance, change, recipient, fut):
+            (test_usdcx_stablecoin.aleo::ComplianceRecord,
+             test_usdcx_stablecoin.aleo::Token,
+             test_usdcx_stablecoin.aleo::Token,
+             Final) = test_usdcx_stablecoin.aleo::transfer_private(
+            seller, usdcx_cost, usdcx_token, freeze_proofs,
+        );
 
         let holding: Holding = Holding {
             owner: self.caller,
@@ -228,8 +244,8 @@ program ghost_trade_v3.aleo {
             amount,
         };
 
-        return (holding, final {
-            transfer.run();
+        return (holding, compliance, change, recipient, final {
+            fut.run();
         });
     }
 }

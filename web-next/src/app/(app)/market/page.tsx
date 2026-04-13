@@ -129,7 +129,7 @@ export default function MarketPage() {
               </div>
             </CardHeader>
             <CardContent className="px-0">
-              <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 border-b border-border/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 <span>Token</span>
                 <SortHeader active={sortKey === "price"} onClick={() => setSortKey("price")}>
                   Price
@@ -152,7 +152,7 @@ export default function MarketPage() {
                   {query ? `No tokens match "${query}"` : "No market data available"}
                 </div>
               ) : (
-                <div className="divide-y divide-border/30">
+                <div className="divide-y divide-border">
                   {filtered.map((t) => {
                     const isSelected = selectedSymbol === t.symbol;
                     return (
@@ -172,7 +172,7 @@ export default function MarketPage() {
                               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono text-[10px] font-bold transition-colors",
                               isSelected
                                 ? "bg-primary/15 text-primary ring-1 ring-primary/20"
-                                : "bg-muted/60 text-muted-foreground",
+                                : "bg-muted text-muted-foreground",
                             )}
                           >
                             {t.symbol.slice(0, 3)}
@@ -260,7 +260,7 @@ export default function MarketPage() {
                       No price history yet
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-3 border-t border-border/40 pt-4">
+                  <div className="grid grid-cols-2 gap-3 border-t border-border pt-4">
                     <Stat label="1h" value={formatPct(selected.change1h)} />
                     <Stat label="24h" value={formatPct(selected.change24h)} />
                     <Stat

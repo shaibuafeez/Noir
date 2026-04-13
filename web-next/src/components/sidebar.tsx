@@ -55,14 +55,14 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border/60 bg-card/40 backdrop-blur-xl lg:block">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-card backdrop-blur-xl lg:block">
       <div className="flex h-full flex-col">
         {/* Logo + Connect */}
-        <div className="flex h-16 items-center justify-between border-b border-border/40 px-6">
+        <div className="flex h-16 items-center justify-between border-b border-border px-6">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/25">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-primary/30">
               <Eclipse className="h-4 w-4 text-primary" />
-              <div className="absolute -inset-1 -z-10 rounded-lg bg-primary/5 blur-md" />
+              <div className="absolute -inset-1 -z-10 rounded-lg bg-primary/10 blur-md" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-tight">Noir</span>
@@ -99,7 +99,7 @@ export function Sidebar() {
                 {active && (
                   <motion.div
                     layoutId="sidebar-active"
-                    className="absolute inset-0 rounded-lg bg-accent/80 ring-1 ring-primary/10"
+                    className="absolute inset-0 rounded-lg bg-accent ring-1 ring-primary/20"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -123,7 +123,7 @@ export function Sidebar() {
         </nav>
 
         {/* Footer — status + wallet */}
-        <div className="border-t border-border/40 p-4">
+        <div className="border-t border-border p-4">
           <div className="flex items-center gap-2 text-xs">
             {connected ? (
               <>
@@ -143,12 +143,12 @@ export function Sidebar() {
           </div>
 
           {shield.connected ? (
-            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/[0.04] p-3">
+            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/[0.08] p-3">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" />
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-medium">Shield Wallet</div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-primary/60">
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-primary">
                     active wallet
                   </div>
                 </div>
@@ -158,20 +158,20 @@ export function Sidebar() {
               )}
               <button
                 onClick={() => shield.disconnect()}
-                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
+                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
               >
                 <LogOut className="h-3 w-3" />
                 Disconnect
               </button>
             </div>
           ) : authSession ? (
-            <div className="mt-3 rounded-lg border border-border/40 bg-background/40 p-3">
+            <div className="mt-3 rounded-lg border border-border bg-background p-3">
               <div className="flex items-center gap-2">
                 {authSession.picture && (
                   <img
                     src={authSession.picture}
                     alt=""
-                    className="h-6 w-6 rounded-full ring-1 ring-border/40"
+                    className="h-6 w-6 rounded-full ring-1 ring-border"
                     referrerPolicy="no-referrer"
                   />
                 )}
@@ -190,14 +190,14 @@ export function Sidebar() {
               <BalanceDisplay credits={balance.data?.balanceCredits ?? 0} usdcx={usdcxBalance.data?.balanceUsdcx ?? 0} loading={balance.loading} usdcxLoading={usdcxBalance.loading} />
               <button
                 onClick={signOut}
-                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
+                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-destructive/30 hover:text-destructive hover:bg-destructive/5"
               >
                 <LogOut className="h-3 w-3" />
                 Disconnect
               </button>
             </div>
           ) : walletAddress ? (
-            <div className="mt-3 rounded-lg border border-border/40 bg-background/40 p-3">
+            <div className="mt-3 rounded-lg border border-border bg-background p-3">
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                 wallet
               </div>
@@ -231,7 +231,7 @@ function BalanceDisplay({
 }) {
   return (
     <div className="mt-2 space-y-1.5">
-      <div className="rounded-md border border-border/30 bg-background/30 p-2">
+      <div className="rounded-md border border-border bg-background p-2">
         <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
           ALEO Balance
         </div>
@@ -250,7 +250,7 @@ function BalanceDisplay({
           )}
         </div>
       </div>
-      <div className="rounded-md border border-border/30 bg-background/30 p-2">
+      <div className="rounded-md border border-border bg-background p-2">
         <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
           USDCx Balance
         </div>
@@ -287,7 +287,7 @@ function CopyAddress({ address }: { address: string }) {
       onClick={copy}
       className="mt-2 flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-primary/5 group"
     >
-      <span className="truncate font-mono text-[11px] text-primary/80">
+      <span className="truncate font-mono text-[11px] text-primary">
         {shortAddress(address, 8)}
       </span>
       {copied ? (
@@ -303,7 +303,7 @@ export function MobileHeader() {
   const { connected, authSession } = useWs();
   const shield = useWallet();
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/40 bg-background/60 px-4 backdrop-blur-xl lg:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl lg:hidden">
       <div className="flex items-center gap-2.5">
         <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
           <Eclipse className="h-3.5 w-3.5 text-primary" />
@@ -312,7 +312,7 @@ export function MobileHeader() {
       </div>
       <div className="flex items-center gap-3">
         {shield.connected ? (
-          <div className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/[0.06] px-2 py-1.5 text-[10px] font-mono text-primary/80">
+          <div className="flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 py-1.5 text-[10px] font-mono text-primary">
             <Shield className="h-3 w-3" />
             {shield.address ? shortAddress(shield.address, 4) : "Shield"}
           </div>

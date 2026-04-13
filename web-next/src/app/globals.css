@@ -17,11 +17,11 @@
     --primary: 340 40% 37%; /* #853953 */
     --primary-foreground: 180 5% 95%; /* #F3F4F4 */
 
-    --secondary: 340 15% 91%; /* Very pale wine */
+    --secondary: 340 15% 85%; /* Pale wine */
     --secondary-foreground: 340 40% 30%;
 
     --muted: 180 5% 90%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 35%;
 
     --accent: 340 15% 91%;
     --accent-foreground: 340 40% 30%;

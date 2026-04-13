@@ -206,7 +206,7 @@ export default function LaunchpadPage() {
             </div>
 
             <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
-              <div className="flex rounded-lg border-2 border-border/40 bg-muted/20 p-1">
+              <div className="flex rounded-lg border-2 border-border bg-muted/50 p-1">
                 {filterTabs.map((t) => (
                   <button
                     key={t.key}
@@ -229,7 +229,7 @@ export default function LaunchpadPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search ticker..."
-                  className="h-9 pl-9 border-2 border-border/40 bg-card font-medium placeholder:text-muted-foreground/60 transition-colors focus-visible:border-primary/50"
+                  className="h-9 pl-9 border-2 border-border bg-card font-medium placeholder:text-muted-foreground transition-colors focus-visible:border-primary/50"
                 />
               </div>
             </div>
@@ -248,7 +248,7 @@ export default function LaunchpadPage() {
             </div>
           ) : filteredItems.length === 0 ? (
             <FadeIn>
-              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-card/50 py-24 px-6 text-center shadow-sm">
+              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-card py-24 px-6 text-center shadow-sm">
                 {items.length === 0 ? (
                   <>
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-5 shadow-inner">
@@ -291,7 +291,7 @@ export default function LaunchpadPage() {
         {/* Detail panel */}
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-4">
-            <Card className="overflow-hidden border-2 border-border/40 shadow-xl bg-card/60 backdrop-blur-xl">
+            <Card className="overflow-hidden border-2 border-border shadow-xl bg-card backdrop-blur-xl">
               {!detail.data ? (
                 <CardContent className="flex flex-col items-center justify-center p-10 text-center h-[500px]">
                   {detail.loading ? (
@@ -306,7 +306,7 @@ export default function LaunchpadPage() {
                     </div>
                   ) : (
                     <div className="w-full flex flex-col items-center">
-                      <div className="mb-10 w-full max-w-[240px] opacity-40 select-none space-y-5">
+                      <div className="mb-10 w-full max-w-[240px] opacity-60 select-none space-y-5">
                         <div className="flex flex-col items-center gap-3">
                            <div className="h-12 w-12 rounded-xl border-2 border-dashed border-border/80" />
                            <div className="h-3 w-20 bg-muted/80 rounded-full" />
@@ -483,7 +483,7 @@ function SocialLinks({
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "flex items-center justify-center rounded-md border border-border/40 transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary",
+              "flex items-center justify-center rounded-md border border-border transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary",
               compact ? "h-6 w-6" : "h-7 w-7",
             )}
             title={l.label}
@@ -534,7 +534,7 @@ function LaunchCard({
               ? "ring-primary/30"
               : isGraduatingSoon
                 ? "ring-[hsl(var(--warning))]/30"
-                : "ring-border/40 group-hover:ring-primary/30",
+                : "ring-border group-hover:ring-primary/30",
           )}
         />
         <div className="flex-1 min-w-0">
@@ -555,7 +555,7 @@ function LaunchCard({
           </div>
           <div className="text-[11px] text-muted-foreground truncate">{launch.name}</div>
           {launch.description && (
-            <div className="text-[10px] text-muted-foreground/70 truncate mt-0.5">{launch.description}</div>
+            <div className="text-[10px] text-muted-foreground truncate mt-0.5">{launch.description}</div>
           )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
@@ -565,9 +565,9 @@ function LaunchCard({
           </div>
           {hasSocials && (
             <div className="flex items-center gap-0.5">
-              {launch.website_url && <Globe className="h-2.5 w-2.5 text-muted-foreground/50" />}
-              {launch.twitter_url && <TwitterIcon className="h-2.5 w-2.5 text-muted-foreground/50" />}
-              {launch.telegram_url && <TelegramIcon className="h-2.5 w-2.5 text-muted-foreground/50" />}
+              {launch.website_url && <Globe className="h-2.5 w-2.5 text-muted-foreground" />}
+              {launch.twitter_url && <TwitterIcon className="h-2.5 w-2.5 text-muted-foreground" />}
+              {launch.telegram_url && <TelegramIcon className="h-2.5 w-2.5 text-muted-foreground" />}
             </div>
           )}
         </div>
@@ -606,7 +606,7 @@ function LaunchCard({
             style={{ width: `${Math.min(progressPct, 100)}%` }}
           />
           <div
-            className="absolute top-0 h-full w-px bg-foreground/20"
+            className="absolute top-0 h-full w-px bg-foreground/40"
             style={{ left: `${(GRADUATION_THRESHOLD / MAX_SUPPLY) * 100}%` }}
           />
         </div>
@@ -788,7 +788,7 @@ function LaunchDetail({
         {/* Launch ID (copyable) */}
         <button
           onClick={copyLaunchId}
-          className="mt-2 flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          className="mt-2 flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-muted-foreground transition-colors"
         >
           <span className="truncate max-w-[180px]">ID: {detail.launch_id}</span>
           {copied ? <Check className="h-2.5 w-2.5 text-[hsl(var(--success))]" /> : <Copy className="h-2.5 w-2.5" />}
@@ -806,7 +806,7 @@ function LaunchDetail({
       <CardContent className="space-y-4 pt-0">
         {/* Bonding curve chart */}
         {curveData.length > 1 ? (
-          <div className="rounded-lg border border-border/30 bg-muted/10 p-2">
+          <div className="rounded-lg border border-border bg-muted/30 p-2">
             <PortfolioArea
               data={curveData}
               height={120}
@@ -859,7 +859,7 @@ function LaunchDetail({
 
         {/* Buy/Sell form */}
         {!isGraduated && (
-          <div className="rounded-lg border border-border/40 bg-card/60 p-3 space-y-3">
+          <div className="rounded-lg border border-border bg-card p-3 space-y-3">
             <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted/30 p-0.5">
               <button
                 onClick={() => setSide("buy")}
@@ -894,7 +894,7 @@ function LaunchDetail({
                   "flex w-full items-center justify-center gap-1.5 rounded-md border py-1.5 text-[10px] font-mono uppercase tracking-widest transition-all",
                   payWithUsdcx
                     ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
-                    : "border-border/40 text-muted-foreground hover:border-primary/30",
+                    : "border-border text-muted-foreground hover:border-primary/30",
                 )}
               >
                 {payWithUsdcx ? "Paying with USDCx" : "Pay with ALEO"}
@@ -910,7 +910,7 @@ function LaunchDetail({
                     "flex-1 rounded-md border py-1.5 font-mono text-[10px] font-medium transition-all",
                     amount === p.toString()
                       ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground",
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground",
                   )}
                 >
                   {p >= 1000 ? `${p / 1000}K` : p}
@@ -975,7 +975,7 @@ function LaunchDetail({
                   "rounded-md border p-2.5 text-[11px] font-mono whitespace-pre-wrap",
                   tradeMsg.includes("submitted") || tradeMsg.includes("BUY") || tradeMsg.includes("SELL")
                     ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5 text-[hsl(var(--success))]"
-                    : "border-border/40 bg-muted/30 text-muted-foreground",
+                    : "border-border bg-muted/30 text-muted-foreground",
                 )}
               >
                 {tradeMsg}
@@ -1003,11 +1003,11 @@ function LaunchDetail({
               <Activity className="h-3 w-3" />
               Live Activity
             </div>
-            <div className="space-y-1 max-h-36 overflow-y-auto rounded-lg border border-border/30 bg-muted/5 p-2">
+            <div className="space-y-1 max-h-36 overflow-y-auto rounded-lg border border-border bg-muted/5 p-2">
               {detail.recentTrades.map((t) => (
                 <div
                   key={t.id}
-                  className="trade-entry flex items-center justify-between text-[11px] py-1 px-1.5 rounded-md hover:bg-muted/20 transition-colors"
+                  className="trade-entry flex items-center justify-between text-[11px] py-1 px-1.5 rounded-md hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <div
@@ -1054,7 +1054,7 @@ function LaunchDetail({
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border/30 bg-muted/10 px-2.5 py-2">
+    <div className="rounded-lg border border-border bg-muted/30 px-2.5 py-2">
       <div className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground leading-none">
         {label}
       </div>
@@ -1172,7 +1172,7 @@ function CreateLaunchModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-lg rounded-xl border border-border/60 bg-card p-6 shadow-2xl shadow-primary/5 my-8"
+        className="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl shadow-primary/5 my-8"
       >
         <button
           onClick={onClose}
@@ -1214,13 +1214,13 @@ function CreateLaunchModal({
                   "relative flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed transition-all overflow-hidden",
                   imagePreview
                     ? "border-primary/40"
-                    : "border-border/60 hover:border-primary/30 hover:bg-primary/5",
+                    : "border-border hover:border-primary/30 hover:bg-primary/5",
                 )}
               >
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                 ) : (
-                  <ImagePlus className="h-6 w-6 text-muted-foreground/60" />
+                  <ImagePlus className="h-6 w-6 text-muted-foreground" />
                 )}
               </button>
               <div className="text-[10px] text-muted-foreground space-y-0.5">
@@ -1360,7 +1360,7 @@ function CreateLaunchModal({
           </AnimatePresence>
 
           {/* Info banner */}
-          <div className="rounded-lg border border-border/30 bg-muted/10 p-3 text-[10px] text-muted-foreground space-y-1">
+          <div className="rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-muted-foreground space-y-1">
             <p className="font-medium text-foreground/80">Token parameters (fixed):</p>
             <div className="flex justify-between">
               <span>Max supply</span>

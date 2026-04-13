@@ -162,7 +162,7 @@ export default function HistoryPage() {
                         "rounded-lg border px-2.5 py-1 text-[11px] font-mono uppercase tracking-widest transition-all duration-200",
                         filter === f
                           ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_8px_hsl(var(--primary)/0.08)]"
-                          : "border-border/40 bg-transparent text-muted-foreground hover:text-foreground",
+                          : "border-border bg-transparent text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {f}
@@ -187,7 +187,7 @@ export default function HistoryPage() {
                       : "No trades match your filters"}
                   </div>
                 ) : (
-                  <div className="divide-y divide-border/30">
+                  <div className="divide-y divide-border">
                     {filtered.map((t) => (
                       <TradeItem key={t.id} trade={t} />
                     ))}
@@ -218,7 +218,7 @@ export default function HistoryPage() {
                     No decisions logged yet
                   </div>
                 ) : (
-                  <div className="divide-y divide-border/30">
+                  <div className="divide-y divide-border">
                     {allDecisions.map((d) => (
                       <DecisionItem key={d.id} decision={d} />
                     ))}
@@ -272,7 +272,7 @@ function TradeItem({ trade }: { trade: TradeRow }) {
           <span>{timeAgo(trade.timestamp)}</span>
           {trade.tx_hash && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground">·</span>
               <code className="font-mono">
                 {trade.tx_hash.slice(0, 8)}…{trade.tx_hash.slice(-4)}
               </code>

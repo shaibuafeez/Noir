@@ -64,8 +64,10 @@ is guaranteed by the protocol; custody is the trust variable.
 
 - Google OAuth JWT is verified server-side using the `jose` library (JWKS
   fetched from Google).
-- A BHP256 commitment `hash(salt || iss_hash || sub_hash)` is stored on-chain in
-  `ghost_zklogin_v1.aleo`.
+- A BHP256 commitment `hash(ZkLoginPreimage { salt, iss_hash, sub_hash })` is
+  stored on-chain in `ghost_zklogin_v2.aleo`. The struct-based hash prevents
+  field-addition collisions (e.g. different (salt, iss, sub) tuples that sum to
+  the same value now produce distinct commitments).
 - The salt is server-generated and stored in the SQLite database.
 - **Risk**: The server knows the mapping between a Google identity and the
   derived Aleo address. If the server is compromised, this mapping is exposed.
@@ -89,11 +91,12 @@ is guaranteed by the protocol; custody is the trust variable.
 
 All three Leo programs compile on Leo 4.0.1 and are deployed on Aleo testnet.
 
-### ghost_trade_v2.aleo (9 transitions)
+### ghost_trade_v3.aleo (9 transitions)
 - Admin/minter access control (hardcoded admin address)
 - Overflow guards on all arithmetic (Leo enforces by default)
 - Minimum output on swaps (slippage protection)
-- Cross-program USDCx buy with `test_usdcx_stablecoin.aleo`
+- Cross-program USDCx buy uses `transfer_private` — both buyer/seller addresses
+  and payment amount are hidden in encrypted records (no public mapping leaks)
 
 ### ghost_launchpad_v1.aleo (5 transitions)
 - Treasury accounting — all funds tracked in on-chain mappings
@@ -102,8 +105,9 @@ All three Leo programs compile on Leo 4.0.1 and are deployed on Aleo testnet.
   cannot be flipped back (no rug-pull after graduation)
 - Overflow guards on bonding curve math
 
-### ghost_zklogin_v1.aleo (3 transitions)
-- BHP256 preimage commitment proofs (`salt + iss_hash + sub_hash`)
+### ghost_zklogin_v2.aleo (3 transitions)
+- BHP256 struct-based commitment proofs (`ZkLoginPreimage { salt, iss_hash, sub_hash }`)
+  — prevents field-addition collision attacks
 - Unregister requires ownership proof (must know the preimage)
 - No admin backdoor — only the commitment owner can unregister
 

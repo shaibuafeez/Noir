@@ -28,7 +28,7 @@ const NAV = [
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border/40 bg-background/70 backdrop-blur-xl lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/90 backdrop-blur-xl lg:hidden">
       <div className="flex items-stretch justify-around">
         {NAV.map((item) => {
           const active =

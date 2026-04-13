@@ -103,11 +103,11 @@ export default function StrategiesPage() {
               <TabsTrigger
                 key={t.value}
                 value={t.value}
-                className="group gap-2 rounded-lg border border-border/40 bg-card/40 px-3 py-2.5 text-xs font-medium backdrop-blur-sm transition-all data-[state=active]:border-primary/30 data-[state=active]:bg-primary/8 data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_12px_hsl(var(--primary)/0.06)]"
+                className="group gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-xs font-medium backdrop-blur-sm transition-all data-[state=active]:border-primary/30 data-[state=active]:bg-primary/15 data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_12px_hsl(var(--primary)/0.06)]"
               >
                 <t.icon className="h-3.5 w-3.5" />
                 {t.label}
-                <span className="ml-0.5 rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] tabular-nums group-data-[state=active]:bg-primary/15">
+                <span className="ml-0.5 rounded-md bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums group-data-[state=active]:bg-primary/15">
                   {t.count}
                 </span>
               </TabsTrigger>
@@ -312,7 +312,7 @@ function IconBubble({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/8">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/15">
       <Icon className="h-4 w-4 text-primary" />
     </div>
   );
@@ -455,7 +455,7 @@ function RebalanceCard({ strategy: s }: { strategy: RebalanceStrategy }) {
         </div>
         {entries.length > 0 && (
           <div
-            className="grid gap-2 border-t border-border/40 pt-3"
+            className="grid gap-2 border-t border-border pt-3"
             style={{
               gridTemplateColumns: `repeat(${Math.min(
                 entries.length,
@@ -528,7 +528,7 @@ function EmptyStrategy({
           </div>
         ) : (
           <>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/40 bg-muted/20">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/50">
               <Icon className="h-5 w-5 text-muted-foreground" />
             </div>
             <p className="font-medium text-sm">{label}</p>
@@ -577,7 +577,7 @@ function ModalOverlay({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-md rounded-xl border border-border/60 bg-card p-6 shadow-2xl shadow-primary/5 my-8"
+        className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl shadow-primary/5 my-8"
       >
         <button
           onClick={onClose}
@@ -740,7 +740,7 @@ function CreateLimitModal({
                     ? s === "buy"
                       ? "border-green-500/40 bg-green-500/10 text-green-400"
                       : "border-red-500/40 bg-red-500/10 text-red-400"
-                    : "border-border/40 bg-card/40 text-muted-foreground hover:bg-accent",
+                    : "border-border bg-card text-muted-foreground hover:bg-accent",
                 )}
               >
                 {s.toUpperCase()}

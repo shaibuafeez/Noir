@@ -51,7 +51,7 @@ function useIsMobile() {
 /* ─── Minimalist NavLink ─── */
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} className="group relative text-muted-foreground/80 transition-all duration-300 hover:opacity-100 hover:text-foreground">
+    <a href={href} className="group relative text-muted-foreground transition-all duration-300 hover:opacity-100 hover:text-foreground">
       {children}
     </a>
   );
@@ -96,19 +96,18 @@ function FloatingHeader() {
             <nav className="hidden items-center gap-8 text-sm font-medium tracking-wide md:flex">
               <NavLink href="#features">Features</NavLink>
               <NavLink href="#platforms">Platforms</NavLink>
-              <NavLink href="#how">How it works</NavLink>
               <a
                 href="https://aleo.org"
                 target="_blank"
                 rel="noreferrer"
-                className="text-muted-foreground/80 transition-all duration-300 hover:opacity-100 hover:text-foreground"
+                className="text-muted-foreground transition-all duration-300 hover:opacity-100 hover:text-foreground"
               >
                 Aleo
               </a>
             </nav>
 
             <div className="flex items-center gap-3">
-              <Button asChild size="sm" variant="outline" className="hidden md:inline-flex rounded-full border-border/40 px-5 text-xs font-medium uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors duration-300">
+              <Button asChild size="sm" variant="outline" className="hidden md:inline-flex rounded-full border-border px-5 text-xs font-medium uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors duration-300">
                 <Link href="/dashboard">Launch</Link>
               </Button>
               <button
@@ -131,11 +130,11 @@ function FloatingHeader() {
                 className="border-t border-white/5 bg-transparent md:hidden"
               >
                 <div className="flex flex-col gap-4 px-6 py-6 pb-8">
-                  <a href="#features" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>Features</a>
-                  <a href="#platforms" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>Platforms</a>
-                  <a href="#how" className="text-sm text-muted-foreground/80 hover:text-foreground" onClick={() => setMobileOpen(false)}>How it works</a>
-                  <a href="https://aleo.org" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground/80 hover:text-foreground">Aleo</a>
-                  <Button asChild size="sm" variant="outline" className="w-full rounded-full border-border/40 hover:bg-foreground hover:text-background mt-2">
+                  <a href="#features" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Features</a>
+                  <a href="#platforms" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Platforms</a>
+
+                  <a href="https://aleo.org" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground hover:text-foreground">Aleo</a>
+                  <Button asChild size="sm" variant="outline" className="w-full rounded-full border-border hover:bg-foreground hover:text-background mt-2">
                     <Link href="/dashboard">Launch Dashboard</Link>
                   </Button>
                 </div>
@@ -272,7 +271,7 @@ function StatsTicker() {
   }
 
   return (
-    <div ref={ref} className="mt-24 flex flex-wrap items-center justify-center gap-x-16 gap-y-6 font-mono text-sm tracking-widest text-muted-foreground/60 uppercase">
+    <div ref={ref} className="mt-24 flex flex-wrap items-center justify-center gap-x-16 gap-y-6 font-mono text-sm tracking-widest text-muted-foreground uppercase">
       <div className="flex flex-col items-center gap-1">
         <AnimatedNumber
           value={inView ? stats.trades : 0}
@@ -353,17 +352,17 @@ export default function Landing() {
         <FadeIn delay={0.2}>
           <h1 className="mx-auto max-w-5xl text-balance text-6xl font-medium tracking-tighter md:text-8xl lg:text-[7.5rem] leading-[1.1]">
             Trade private.<br />
-            <span className="text-muted-foreground/60 italic font-serif">Talk natural.</span>
+            <span className="text-muted-foreground italic font-serif">Talk natural.</span>
           </h1>
         </FadeIn>
 
         <FadeIn delay={0.4}>
-          <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl leading-relaxed text-muted-foreground/80 font-light">
+          <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl leading-relaxed text-muted-foreground font-light">
             An AI trading agent on Aleo&apos;s private zkVM. Trade by text or voice,
             launch tokens, copy traders, automate strategies &mdash; all shielded
             by zero-knowledge proofs.
           </p>
-          <p className="mx-auto mt-4 text-sm font-medium text-primary/80 tracking-wide">
+          <p className="mx-auto mt-4 text-sm font-medium text-primary tracking-wide">
             Web, Voice, Telegram, Discord, CLI &amp; SDK
           </p>
         </FadeIn>
@@ -373,7 +372,7 @@ export default function Landing() {
             <Button asChild size="lg" className="rounded-full px-8 font-medium">
               <Link href="/dashboard">Launch Dashboard</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-full border-border/40 px-8 hover:bg-foreground hover:text-background transition-colors duration-300">
+            <Button asChild variant="outline" size="lg" className="rounded-full border-border px-8 hover:bg-foreground hover:text-background transition-colors duration-300">
               <Link href="/chat">Try the agent</Link>
             </Button>
           </div>
@@ -383,7 +382,7 @@ export default function Landing() {
       </section>
 
       {/* ─── FEATURES — Bento Grid ─── */}
-      <section id="features" className="relative z-10 border-t border-border/30">
+      <section id="features" className="relative z-10 border-t border-border">
         <div className="absolute inset-0 bg-gradient-to-b from-card/30 to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-6 py-28">
           <div className="mx-auto max-w-2xl text-center">
@@ -455,7 +454,7 @@ export default function Landing() {
       </section>
 
       {/* ─── TRY NOIR EVERYWHERE ─── */}
-      <section id="platforms" className="relative z-10 border-t border-border/30">
+      <section id="platforms" className="relative z-10 border-t border-border">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-6 py-28">
           <div className="mx-auto max-w-2xl text-center">
@@ -521,7 +520,7 @@ export default function Landing() {
               <StaggerItem key={p.title}>
                 <TiltCard className="group flex h-full flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 transition-colors group-hover:bg-primary/12">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/30 transition-colors group-hover:bg-primary/20">
                       <p.icon className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex items-center gap-2">
@@ -540,14 +539,14 @@ export default function Landing() {
                       href={p.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary"
                     >
                       {p.cta} <ArrowRight className="h-3.5 w-3.5" />
                     </a>
                   ) : (
                     <Link
                       href={p.href}
-                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                      className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary"
                     >
                       {p.cta} <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
@@ -561,7 +560,7 @@ export default function Landing() {
 
 
       {/* ─── CTA ─── */}
-      <section className="relative z-10 border-t border-border/30">
+      <section className="relative z-10 border-t border-border">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.03] to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-3xl px-6 py-28 text-center">
           <CTASection isMobile={isMobile} />
@@ -579,9 +578,9 @@ export default function Landing() {
               <React.Fragment key={setIdx}>
                 {["Aleo", "Zero Knowledge", "Private", "Shielded", "ZK Proofs", "Noir Protocol", "On-Chain", "Verifiable"].map(
                   (word, i) => (
-                    <span key={`${setIdx}-${i}`} className="flex items-center gap-4 px-4 font-mono text-xs uppercase tracking-widest text-muted-foreground/60">
+                    <span key={`${setIdx}-${i}`} className="flex items-center gap-4 px-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                       {word}
-                      <span className="h-1 w-1 rounded-full bg-muted-foreground/20" />
+                      <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                     </span>
                   )
                 )}
@@ -593,7 +592,7 @@ export default function Landing() {
         <div className="gradient-separator" />
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 text-xs text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2 font-mono uppercase tracking-widest">
-            <Eclipse className="h-3 w-3 text-primary/50" /> noir · private · aleo
+            <Eclipse className="h-3 w-3 text-primary" /> noir · private · aleo
           </div>
           <div className="flex items-center gap-6">
             <a href="#platforms" className="font-mono uppercase tracking-widest hover:text-foreground transition-colors">Platforms</a>

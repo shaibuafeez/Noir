@@ -3,6 +3,17 @@ program ghost_zklogin_v2.aleo {
     @noupgrade
     constructor() {}
 
+    // ── Structs ──
+
+    // Preimage for the zkLogin commitment hash.
+    // Using a struct prevents field-addition collisions where
+    // (salt=5, iss=3, sub=2) would equal (salt=3, iss=5, sub=2).
+    struct ZkLoginPreimage {
+        salt: field,
+        iss_hash: field,
+        sub_hash: field,
+    }
+
     // ── Records ──
 
     // A private credential proving that a zkLogin commitment was registered.
@@ -21,8 +32,8 @@ program ghost_zklogin_v2.aleo {
     // ── Functions ──
 
     // Register a zkLogin commitment on-chain.
-    // The commitment is verified by recomputing the hash from preimage components:
-    //   commitment = BHP256::hash_to_field(salt || iss_hash || sub_hash)
+    // The commitment is verified by recomputing the hash from a struct preimage:
+    //   commitment = BHP256::hash_to_field(ZkLoginPreimage { salt, iss_hash, sub_hash })
     // This proves the caller knows the underlying OAuth identity without revealing it.
     fn register_zklogin(
         salt: field,
@@ -30,8 +41,9 @@ program ghost_zklogin_v2.aleo {
         sub_hash: field,
         timestamp: u64,
     ) -> (ZkLoginCredential, Final) {
-        // Recompute the commitment from preimage to prove ownership
-        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+        // Recompute the commitment from struct preimage to prove ownership
+        let preimage: ZkLoginPreimage = ZkLoginPreimage { salt, iss_hash, sub_hash };
+        let computed: field = BHP256::hash_to_field(preimage);
 
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
@@ -56,8 +68,9 @@ program ghost_zklogin_v2.aleo {
         sub_hash: field,
         timestamp: u64,
     ) -> (ZkLoginCredential, Final) {
-        // Recompute commitment from preimage
-        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+        // Recompute commitment from struct preimage
+        let preimage: ZkLoginPreimage = ZkLoginPreimage { salt, iss_hash, sub_hash };
+        let computed: field = BHP256::hash_to_field(preimage);
 
         let credential: ZkLoginCredential = ZkLoginCredential {
             owner: self.caller,
@@ -80,7 +93,8 @@ program ghost_zklogin_v2.aleo {
         iss_hash: field,
         sub_hash: field,
     ) -> Final {
-        let computed: field = BHP256::hash_to_field(salt + iss_hash + sub_hash);
+        let preimage: ZkLoginPreimage = ZkLoginPreimage { salt, iss_hash, sub_hash };
+        let computed: field = BHP256::hash_to_field(preimage);
         let caller: address = self.caller;
         let commitment: field = computed;
         return final {

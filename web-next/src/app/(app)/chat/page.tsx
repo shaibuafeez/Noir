@@ -158,9 +158,9 @@ export default function ChatPage() {
           </div>
 
           {/* Session wallet + Input */}
-          <div className="border-t border-border/40 bg-background/30 p-3 backdrop-blur-sm md:p-4">
+          <div className="border-t border-border bg-background p-3 backdrop-blur-sm md:p-4">
             <SessionWalletBanner />
-            <div className="flex items-end gap-2 rounded-xl border border-border/60 bg-background/60 px-3 py-2 backdrop-blur-sm transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_16px_hsl(var(--primary)/0.08)]">
+            <div className="flex items-end gap-2 rounded-xl border border-border/60 bg-background/80 px-3 py-2 backdrop-blur-sm transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_16px_hsl(var(--primary)/0.08)]">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -173,7 +173,7 @@ export default function ChatPage() {
                 }
                 disabled={!connected}
                 rows={1}
-                className="min-h-[24px] flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
+                className="min-h-[24px] flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
                 style={{ maxHeight: "160px" }}
               />
               <Button
@@ -198,13 +198,13 @@ export default function ChatPage() {
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="mt-2 flex items-center justify-between px-1 text-[11px] text-muted-foreground/60">
+            <div className="mt-2 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
               <span>
-                <kbd className="rounded border border-border/40 bg-muted/40 px-1 py-0.5 font-mono text-[10px]">
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">
                   Enter
                 </kbd>{" "}
                 to send ·{" "}
-                <kbd className="rounded border border-border/40 bg-muted/40 px-1 py-0.5 font-mono text-[10px]">
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">
                   Shift+Enter
                 </kbd>{" "}
                 newline
@@ -231,7 +231,7 @@ function EmptyState({
 }) {
   return (
     <FadeIn className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
-      <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/8">
+      <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/15">
         <Terminal className="h-6 w-6 text-primary" />
         <div className="absolute -inset-2 -z-10 rounded-3xl bg-primary/5 blur-xl" />
       </div>
@@ -240,7 +240,7 @@ function EmptyState({
         Your private Aleo trading agent. Type a command below, or try one of these:
       </p>
       {walletAddress && (
-        <div className="mt-4 rounded-lg border border-border/40 bg-muted/20 px-3 py-2 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
+        <div className="mt-4 rounded-lg border border-border bg-muted/50 px-3 py-2 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
           {walletAddress.slice(0, 10)}…{walletAddress.slice(-6)}
         </div>
       )}
@@ -250,7 +250,7 @@ function EmptyState({
             key={s.label}
             disabled={!connected}
             onClick={() => onSuggest(s.prompt)}
-            className="flex items-center gap-2 rounded-xl border border-border/40 bg-card/30 px-3 py-3 text-left text-xs backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-left text-xs backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + i * 0.08 }}
@@ -307,8 +307,8 @@ function MessageBubble({
           className={cn(
             "rounded-xl px-4 py-3 text-sm",
             isUser
-              ? "bg-primary/10 text-foreground ring-1 ring-primary/15"
-              : "border border-border/40 bg-card/40 backdrop-blur-sm",
+              ? "bg-primary/10 text-foreground ring-1 ring-primary/30"
+              : "border border-border bg-card backdrop-blur-sm",
           )}
         >
           <pre className="whitespace-pre-wrap break-words font-sans leading-relaxed">

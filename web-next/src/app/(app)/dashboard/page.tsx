@@ -198,7 +198,7 @@ export default function DashboardPage() {
 
         {/* Sign in CTA */}
         <FadeIn delay={0.4}>
-          <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/40 px-5 py-4">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-5 py-4">
             <div>
               <p className="text-sm font-medium">Sign in for a persistent portfolio</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -393,10 +393,10 @@ export default function DashboardPage() {
                   loading={portfolio.loading}
                 />
               ) : (
-                <div className="divide-y divide-border/40">
+                <div className="divide-y divide-border">
                   {holdings.map((h, i) => (
                     <FadeIn key={h.token} delay={i * 0.05} direction="none" className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-accent/30">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/8 font-mono text-[10px] font-bold text-primary ring-1 ring-primary/15">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 font-mono text-[10px] font-bold text-primary ring-1 ring-primary/30">
                         {h.token.slice(0, 4)}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                   loading={trades.loading}
                 />
               ) : (
-                <div className="divide-y divide-border/40">
+                <div className="divide-y divide-border">
                   {recentTrades.map((t, i) => {
                     const isBuy = t.action === "buy";
                     return (
@@ -525,7 +525,7 @@ function QuickAction({
   return (
     <Card className="group h-full transition-all duration-200 hover:border-primary/20">
       <CardContent className="flex h-full flex-col p-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 transition-colors group-hover:bg-primary/12 group-hover:ring-primary/25">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/30 transition-colors group-hover:bg-primary/12 group-hover:ring-primary/25">
           <Icon className="h-5 w-5 text-primary" />
         </div>
         <h3 className="mt-4 text-sm font-semibold">{title}</h3>
@@ -570,12 +570,12 @@ function EmptyAction({
   }
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 bg-muted/20">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/50">
         <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
       <div>
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <p className="mt-1 text-xs text-muted-foreground/70">{hint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </div>
       <Button size="sm" variant="outline" className="mt-1 rounded-full gap-1.5 text-xs" asChild>
         <Link href={href}>
@@ -620,9 +620,9 @@ function PlatformOverview() {
                   <Tag
                     key={item.label}
                     {...linkProps}
-                    className={`flex items-center gap-2 rounded-lg border border-border/40 bg-background/30 px-3 py-2.5 text-sm${(item as any).href ? " hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer" : ""}`}
+                    className={`flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5 text-sm${(item as any).href ? " hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer" : ""}`}
                   >
-                    <item.icon className="h-3.5 w-3.5 text-primary/70" />
+                    <item.icon className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs truncate">{item.label}</span>
                     <Badge variant="success" className="ml-auto text-[8px] px-1 py-0">
                       Live
@@ -646,7 +646,7 @@ function PlatformOverview() {
               ].map((c) => (
                 <div
                   key={c.name}
-                  className="flex items-center justify-between rounded-lg border border-border/40 bg-background/30 px-3 py-2.5"
+                  className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
@@ -675,9 +675,9 @@ function PlatformOverview() {
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-3">
               Developer SDK
             </h4>
-            <div className="rounded-lg border border-border/40 bg-background/30 px-4 py-3">
+            <div className="rounded-lg border border-border bg-background px-4 py-3">
               <div className="flex items-center gap-2 mb-2">
-                <Cpu className="h-4 w-4 text-primary/70" />
+                <Cpu className="h-4 w-4 text-primary" />
                 <code className="text-xs font-mono text-muted-foreground">
                   npm install @noir-protocol/sdk
                 </code>
@@ -685,7 +685,7 @@ function PlatformOverview() {
                   TypeScript
                 </Badge>
               </div>
-              <pre className="text-[11px] font-mono text-muted-foreground/70 leading-relaxed overflow-x-auto">{`import { NoirClient } from "@noir-protocol/sdk";
+              <pre className="text-[11px] font-mono text-muted-foreground leading-relaxed overflow-x-auto">{`import { NoirClient } from "@noir-protocol/sdk";
 const noir = new NoirClient({ network: "testnet" });
 await noir.trade.buy("ALEO", 100);`}</pre>
             </div>
@@ -724,7 +724,7 @@ function KpiCard({
           <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
             {label}
           </span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/8 text-muted-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-muted-foreground">
             <Icon className="h-4 w-4" />
           </div>
         </div>
@@ -774,13 +774,13 @@ function StrategyRow({
   hint: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border/40 bg-background/30 px-3 py-2.5 transition-colors hover:bg-accent/30 hover:border-border/60">
+    <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5 transition-colors hover:bg-accent/30 hover:border-border/60">
       <div className="flex items-center gap-2.5">
-        <Icon className="h-4 w-4 text-primary/70" />
+        <Icon className="h-4 w-4 text-primary" />
         <div>
           <span className="text-sm">{label}</span>
           {count === 0 && (
-            <p className="text-[10px] text-muted-foreground/60 font-mono truncate max-w-[180px]">
+            <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[180px]">
               &quot;{hint}&quot;
             </p>
           )}

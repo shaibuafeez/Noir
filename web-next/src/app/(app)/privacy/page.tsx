@@ -98,7 +98,7 @@ function CheckItem({
       {active ? (
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--success))]" />
       ) : (
-        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
+        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       )}
       <div className="min-w-0 flex-1">
         <div
@@ -109,7 +109,7 @@ function CheckItem({
         >
           {label}
         </div>
-        <div className="text-xs text-muted-foreground/70">{description}</div>
+        <div className="text-xs text-muted-foreground">{description}</div>
       </div>
     </div>
   );
@@ -128,10 +128,10 @@ function ContractRow({
   const network = "testnet";
   const explorerUrl = `https://explorer.provable.com/${network}/program/${name}`;
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/30 p-3">
+    <div className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <Cpu className="h-3.5 w-3.5 text-primary/60" />
+          <Cpu className="h-3.5 w-3.5 text-primary" />
           <span className="font-mono text-xs text-foreground">{name}</span>
         </div>
         <div className="mt-1 text-[10px] text-muted-foreground">
@@ -162,7 +162,7 @@ function ContractRow({
 function ProofRow({ cap }: { cap: ProofCapability }) {
   const programShort = cap.program.replace(".aleo", "");
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border/20 bg-background/20 p-3 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+    <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
         <Lock className="h-3.5 w-3.5 text-primary" />
       </div>
@@ -178,7 +178,7 @@ function ProofRow({ cap }: { cap: ProofCapability }) {
         <div className="mt-0.5 text-xs text-muted-foreground">
           {cap.description}
         </div>
-        <div className="mt-1 font-mono text-[10px] text-primary/50">
+        <div className="mt-1 font-mono text-[10px] text-primary">
           fn {cap.fn}()
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function PrivacyPage() {
       <StaggerContainer className="grid gap-4 sm:grid-cols-3">
         {/* Privacy Score */}
         <StaggerItem>
-          <Card className="card-shine border-border/40 bg-card/60">
+          <Card className="card-shine border-border bg-card">
             <CardContent className="flex flex-col items-center p-6">
               {loading ? (
                 <Shimmer width="140px" height="140px" className="rounded-full" />
@@ -236,7 +236,7 @@ export default function PrivacyPage() {
 
         {/* ZK Trades */}
         <StaggerItem>
-          <Card className="card-shine border-border/40 bg-card/60">
+          <Card className="card-shine border-border bg-card">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <EyeOff className="h-4 w-4" />
@@ -271,7 +271,7 @@ export default function PrivacyPage() {
 
         {/* Protections Active */}
         <StaggerItem>
-          <Card className="card-shine border-border/40 bg-card/60">
+          <Card className="card-shine border-border bg-card">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Shield className="h-4 w-4" />
@@ -307,7 +307,7 @@ export default function PrivacyPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Privacy Breakdown */}
         <FadeIn delay={0.1}>
-          <Card className="border-border/40 bg-card/60">
+          <Card className="border-border bg-card">
             <CardContent className="p-5">
               <h2 className="flex items-center gap-2 text-sm font-semibold">
                 <Eye className="h-4 w-4 text-primary" />
@@ -357,7 +357,7 @@ export default function PrivacyPage() {
 
         {/* Deployed Contracts */}
         <FadeIn delay={0.15}>
-          <Card className="border-border/40 bg-card/60">
+          <Card className="border-border bg-card">
             <CardContent className="p-5">
               <h2 className="flex items-center gap-2 text-sm font-semibold">
                 <Cpu className="h-4 w-4 text-primary" />
@@ -387,24 +387,24 @@ export default function PrivacyPage() {
 
               {/* Contract Highlights */}
               <div className="mt-4 rounded-lg border border-primary/10 bg-primary/[0.03] p-3">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-primary/60">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-primary">
                   Security Features
                 </div>
                 <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
+                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                     Access-controlled minting with admin authorization
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
+                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                     Overflow guards on all arithmetic operations
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
+                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                     BHP256 commitment proofs for identity verification
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
+                    <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                     Treasury accounting with slippage protection
                   </li>
                 </ul>
@@ -416,7 +416,7 @@ export default function PrivacyPage() {
 
       {/* ZK Proof Capabilities */}
       <FadeIn delay={0.2}>
-        <Card className="border-border/40 bg-card/60">
+        <Card className="border-border bg-card">
           <CardContent className="p-5">
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <Zap className="h-4 w-4 text-primary" />
